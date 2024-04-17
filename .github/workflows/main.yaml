@@ -21,7 +21,7 @@ jobs:
         run: npm install
 
       - name: Build Angular App
-      run: npm run build -- --output-path=dist/portfolio --base-href=/${{ github.repository }}/
+        run: npm run build -- --output-path=dist/portfolio --base-href=/${{ github.repository }}/
 
       - name: Deploy to GitHub Pages
         run: npx angular-cli-ghpages --dir=dist/portfolio --no-silent
