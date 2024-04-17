@@ -1,0 +1,5 @@
+<div class="header">
+  <a *ngFor="let item of menuItems; let i = index" href="#" (click)="setActive(i)" [ngClass]="{'active': activeIndex === i}">
+    {{ item }}
+  </a>
+</div>

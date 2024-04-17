@@ -1,0 +1,28 @@
+.header {
+  display: flex;
+  background-color: rgba(178, 166, 214, 0.3); /* Translucent background */
+  padding: 10px 20px; /* Padding around the text */
+  border: 2px solid rgba(100, 88, 136, 0.5); /* Translucent border */
+  border-radius: 20px;
+  position: fixed;
+  top: 20px;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust translation for exact centering */
+}
+
+.header a {
+  text-decoration: none;
+  color: #313244; /* Catppuccin color for text */
+  font-size: 16px;
+  padding: 10px;
+  transition: background-color 0.3s;
+}
+
+.header a.active {
+  background-color: rgba(87, 82, 104, 0.8); /* Translucent highlight color */
+  color: white;
+}
+
+.header a:not(.active):hover {
+  background-color: rgba(205, 214, 244, 0.3); /* Translucent hover effect */
+}
