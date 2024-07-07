@@ -1,43 +1,56 @@
-name: Deploy to GitHub Pages
+name: Deploy static content to Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: ["main"]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-    - name: Install wasm-pack
-      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-    - name: Build
-      run: wasm-pack build --target web --out-name AutoSimulate --out-dir ./dist/pkg
+      - name: Build
+        run: wasm-pack build --target web --out-name wasm_app --out-dir ./pkg
 
-    - name: Copy index.html
-      run: cp index.html ./dist/
+      - name: Copy index.html
+        run: |
+          cp index.html ./pkg/
+          # If you have any other static assets, copy them here
+          # For example: cp -r assets ./pkg/
 
-    - name: Setup Git
-      run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
-    
-    - name: Deploy to GitHub Pages
-      env:
-        PAT: ${{ secrets.PAT }}
-      run: |
-        cd dist
-        git init
-        git add -A
-        git commit -m "Deploy to GitHub Pages"
-        git push -f https://${PAT}@github.com/OmarSiwy/OmarSiwy.github.io.git main:gh-pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './pkg'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
