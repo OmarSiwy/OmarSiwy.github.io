@@ -27,10 +27,17 @@ jobs:
     - name: Copy index.html
       run: cp index.html ./dist/
 
+    - name: Setup Git
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+    
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.PAT }}
-        publish_dir: ./dist
-        external_repository: OmarSiwy/OmarSiwy.github.io
-        publish_branch: gh-pages
+      env:
+        PAT: ${{ secrets.PAT }}
+      run: |
+        cd dist
+        git init
+        git add -A
+        git commit -m "Deploy to GitHub Pages"
+        git push -f https://${PAT}@github.com/OmarSiwy/OmarSiwy.github.io.git main:gh-pages
