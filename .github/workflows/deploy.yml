@@ -43,6 +43,9 @@ jobs:
           # If you have any other static assets, copy them here
           # For example: cp -r assets ./pkg/
 
+      - name: List pkg contents
+        run: ls -R ./pkg
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
