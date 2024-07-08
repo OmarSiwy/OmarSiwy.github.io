@@ -1,5 +1,5 @@
 [package]
-name = "AutoSimulate"
+name = "portfolio"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,6 +16,7 @@ log = "0.4"
 tobj = { version = "3.2", features = ["async"] }
 wgpu = "0.19"
 winit = { version = "0.29", features = ["rwh_05"] }
+pollster = "0.3"
 
 [dependencies.image]
 version = "0.24"
@@ -40,14 +41,11 @@ web-sys = { version = "0.3", features = [
   "Location",
 ] }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-pollster = "0.3"
-
 [build-dependencies]
 anyhow = "1.0"
 fs_extra = "1.2"
 glob = "0.3"
 
 [[bin]]
-name = "AutoSimulate"
+name = "portfolio"
 path = "src/main.rs"

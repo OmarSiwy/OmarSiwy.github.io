@@ -2,6 +2,21 @@
 
 ### (Heavily in Progress)
 
+# For Local Hosting
+
+## On desktop
+
+```bash
+cargo run
+```
+
+## On Browser
+
+```bash
+cargo install cargo-watch
+cargo watch -x "run --target wasm32-unknown-unknown"
+```
+
 # How the Graphics Work:
 
 - Surface
