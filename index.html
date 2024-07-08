@@ -12,11 +12,42 @@
     </style>
   </head>
 
-  <body id="ThreeD">
+  <body>
+    <div id="ThreeD"></div>
     <script type="module">
       import init from "./wasm_app.js";
-      init().then(() => {
-        console.log("WASM Loaded");
+
+      async function run() {
+        await init("./wasm_app.wasm");
+      }
+
+      const reloadInterval = 1000;
+
+      async function startReloadInterval() {
+        const fetchVersion = () =>
+          fetch("/api/version").then((response) => response.text());
+        const version = await fetchVersion();
+        let intervalToken;
+
+        function reloadIfChanged() {
+          fetchVersion().then((newVersion) => {
+            if (version != newVersion) {
+              window.location.reload();
+            }
+          });
+        }
+
+        intervalToken = setInterval(reloadIfChanged, reloadInterval);
+      }
+
+      run();
+      startReloadInterval();
+    </script>
+
+    <script>
+      document.body.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
       });
     </script>
   </body>
