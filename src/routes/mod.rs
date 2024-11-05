@@ -1,12 +1,31 @@
-use axum::{extract::Form, http::StatusCode, response::Html, routing::{get, post}, Router};
-use crate::state::task_state::get_tasks;
-use serde::Deserialize;
+use axum::response::Html;
+use std::fs;
+use std::io::Result;
+use askama::Template;
+use crate::templates::IndexTemplate;
 
-pub mod tasks;
-pub mod htmx;
+// Route handler to render the index page
+pub async fn render_index() -> Html<String> {
+    let template = IndexTemplate {
+        title: "Portfolio",
+        heading: "Welcome to My Portfolio",
+        description: "This is a statically generated page served on GitHub Pages.",
+    };
 
-pub fn create_routes() -> Router {
-    Router::new()
-        .route("/", get(show_tasks))
-        .route("/add", post(add_task))
+    Html(template.render().unwrap())
+}
+
+// Function to render the template and save it as a static HTML file
+pub fn save_as_static() -> Result<()> {
+    let template = IndexTemplate {
+        title: "Portfolio",
+        heading: "Welcome to My Portfolio",
+        description: "This is a statically generated page served on GitHub Pages.",
+    };
+
+    // Render the template and save it to the `dist` folder
+    let rendered_html = template.render().unwrap();
+    fs::create_dir_all("dist")?;
+    fs::write("dist/index.html", rendered_html)?;
+    Ok(())
 }

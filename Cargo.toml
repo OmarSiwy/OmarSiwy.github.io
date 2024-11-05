@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.8.0" # Hosting
+axum = "0.7.7" # Hosting
 axum-htmx = "0.2.0" # Hosting with htmx headers
-askama = "0.13.0" # Templating Engine
+askama = "0.12.0" # Templating Engine
 
 reqwest = "0.12.0" # API Requests
 anyhow = "1.0.70" # Error Handling
-tracing = "0.2.0" # Logging
+tracing = "0.1.40" # Logging
 sqlx = { version = "0.7.0", features = ["postgres", "macros"] } # Database
 serde = { version = "1.0.200", features = ["derive"] } # Serializing and Deserializing
 serde_json = "1.0.120"
-tokio = { version = "1.38.0", features = ["rt", "macros", "net", "sync"] } # Asynchronous Runtime
+tokio = { version = "1.38.0", features = ["rt", "macros", "net", "sync", "rt-multi-thread"] }
