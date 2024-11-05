@@ -3,49 +3,15 @@ name = "portfolio"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
-anyhow = "1.0"
-bytemuck = { version = "1.12", features = ["derive"] }
-cfg-if = "1"
-cgmath = "0.18"
-env_logger = "0.10"
-log = "0.4"
-tobj = { version = "3.2", features = ["async"] }
-wgpu = "0.19"
-winit = { version = "0.29", features = ["rwh_05"] }
-pollster = "0.3"
+axum = "0.8.0" # Hosting
+axum-htmx = "0.2.0" # Hosting with htmx headers
+askama = "0.13.0" # Templating Engine
 
-[dependencies.image]
-version = "0.24"
-default-features = false
-features = ["png", "jpeg"]
-
-[dependencies.getrandom]
-version = "0.2.15"
-features = ["js"]
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-reqwest = { version = "0.11" }
-console_error_panic_hook = "0.1"
-console_log = "1.0"
-wgpu = { version = "0.19", features = ["webgl"] }
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = [
-  "Document",
-  "Window",
-  "Element",
-  "Location",
-] }
-
-[build-dependencies]
-anyhow = "1.0"
-fs_extra = "1.2"
-glob = "0.3"
-
-[[bin]]
-name = "portfolio"
-path = "src/main.rs"
+reqwest = "0.12.0" # API Requests
+anyhow = "1.0.70" # Error Handling
+tracing = "0.2.0" # Logging
+sqlx = { version = "0.7.0", features = ["postgres", "macros"] } # Database
+serde = { version = "1.0.200", features = ["derive"] } # Serializing and Deserializing
+serde_json = "1.0.120"
+tokio = { version = "1.38.0", features = ["rt", "macros", "net", "sync"] } # Asynchronous Runtime

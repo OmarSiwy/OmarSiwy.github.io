@@ -20,6 +20,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,20 +32,11 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build and Generate Static HTML
+        run: cargo run
 
-      - name: Build
-        run: wasm-pack build --target web --out-name wasm_app --out-dir ./pkg
-
-      - name: Copy index.html
-        run: |
-          cp index.html ./pkg/
-          # If you have any other static assets, copy them here
-          # For example: cp -r assets ./pkg/
-
-      - name: List pkg contents
-        run: ls -R ./pkg
+      - name: List dist Contents
+        run: ls -R ./dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './pkg'
+          path: './dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
