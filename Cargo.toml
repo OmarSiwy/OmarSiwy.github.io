@@ -4,14 +4,28 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7.7" # Hosting
-axum-htmx = "0.2.0" # Hosting with htmx headers
-askama = "0.12.0" # Templating Engine
+# Hosting
+axum = { version = "0.7", features = ["tokio", "http1"] }
+worker = "^0.4.2"
+worker-macros = { version = "^0.4.2", features = ["http"] }
+tower-http = { version = "0.6.1", features = ["fs", "trace"] }
+tower = { version = "0.5.1", features = ["util"] }
 
-reqwest = "0.12.0" # API Requests
-anyhow = "1.0.70" # Error Handling
-tracing = "0.1.40" # Logging
-sqlx = { version = "0.7.0", features = ["postgres", "macros"] } # Database
-serde = { version = "1.0.200", features = ["derive"] } # Serializing and Deserializing
+# Templating
+askama = "0.12.0"
+serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.120"
-tokio = { version = "1.38.0", features = ["rt", "macros", "net", "sync", "rt-multi-thread"] }
+
+# Error Handling
+anyhow = "1.0"
+tracing = "0.1.40"
+
+# API
+reqwest = { version = "0.12.0", default-features = false }
+sqlx = { version = "0.7.0", features = ["postgres", "macros"], optional = true }
+tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "net"] }
+
+[workspace]
+members = [
+    "graphics",
+]
