@@ -2,30 +2,47 @@
 name = "portfolio"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70.0"
 
-[dependencies]
-# Hosting
-axum = { version = "0.7", features = ["tokio", "http1"] }
-worker = "^0.4.2"
-worker-macros = { version = "^0.4.2", features = ["http"] }
-tower-http = { version = "0.6.1", features = ["fs", "trace"] }
-tower = { version = "0.5.1", features = ["util"] }
+[lib]
+crate-type = ["cdylib", "rlib"]
 
-# Templating
-askama = "0.12.0"
-serde = { version = "1.0.200", features = ["derive"] }
-serde_json = "1.0.120"
-
-# Error Handling
-anyhow = "1.0"
-tracing = "0.1.40"
-
-# API
-reqwest = { version = "0.12.0", default-features = false }
-sqlx = { version = "0.7.0", features = ["postgres", "macros"], optional = true }
-tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "net"] }
+[features]
+default = ["console_error_panic_hook"]
 
 [workspace]
 members = [
     "graphics",
 ]
+
+[dependencies]
+# Hosting
+axum = { version = "0.7.9", default-features = false, features = ["http1"] }
+hyper = { version = "1.5.1" }
+tower = { version = "0.5.1" }
+tower-service = { version = "0.3.2" }
+worker = "0.4.2"
+
+# Axum and Cloudflare integration
+axum-cloudflare-adapter = { version = "0.13.0" }
+
+# Templating
+askama = "0.12.1"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"
+
+# Error Handling
+anyhow = "1.0.93"
+cfg-if = "1.0.0"
+
+# WASM-specific async runtime and HTTP client
+wasm-bindgen-futures = "0.4.34"
+url = "2.3.1"
+console_error_panic_hook = { version = "0.1.7", optional = true }
+oneshot = "0.1.6"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.45"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+worker = "0.4.2"
