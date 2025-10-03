@@ -77,8 +77,8 @@ footer small{color:var(--text-subtle);font-size:.85rem}
 .htmx-swapping{opacity:.4;transition:opacity .1s}
 #content{text-align:center;opacity:0;max-height:0;overflow:hidden;transition:opacity .5s ease,max-height .5s ease}
 #content.visible{opacity:1;max-height:5000px}
-.locked-in-gif{position:fixed;left:2rem;top:-200px;width:180px;height:180px;background:url('https://media.tenor.com/FDJ23uAl-AoAAAAM/neuron-activation-neuron.gif') center/contain no-repeat;opacity:0;pointer-events:none;z-index:50;transition:opacity .3s;transform:scaleX(-1);animation:slideDown 20s ease-in-out infinite}
-body[data-page='experience'] .locked-in-gif,body[data-page='projects'] .locked-in-gif{opacity:.7}
+.locked-in-gif{position:fixed;left:2rem;top:-200px;width:180px;height:180px;background:url('https://media.tenor.com/FDJ23uAl-AoAAAAM/neuron-activation-neuron.gif') center/contain no-repeat;opacity:0;pointer-events:none;z-index:50;transition:opacity .3s;animation:slideDown 20s ease-in-out infinite}
+body[data-page='experience'] .locked-in-gif,body[data-page='projects'] .locked-in-gif{opacity:.7;display:block}
 @keyframes slideDown{0%{top:-200px}15%{top:10%}85%{top:calc(100vh - 200px)}100%{top:calc(100vh + 50px)}}
 </style>
 </head>
