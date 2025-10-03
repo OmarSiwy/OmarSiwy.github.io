@@ -3,9 +3,13 @@ main = "build/worker/shim.mjs"
 compatibility_date = "2024-01-01"
 
 routes = [
-  { pattern = "omarelsawy.com", custom_domain = true },
-  { pattern = "www.omarelsawy.com", custom_domain = true }
+    { pattern = "omarelsawy.com", custom_domain = true },
+    { pattern = "www.omarelsawy.com", custom_domain = true },
 ]
+
+[[kv_namespaces]]
+binding = "PORTFOLIO_KV"
+id = "cdfcb8a622474f6f9c6adc5cd7c4da4e"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"

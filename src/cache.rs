@@ -1,18 +1,15 @@
-use std::sync::RwLock;
 use crate::models::SystemStatus;
+use worker::kv::KvStore;
 
-static CACHED_STATUS: RwLock<Option<SystemStatus>> = RwLock::new(None);
+const KV_KEY: &str = "system_status";
 
-#[inline]
-pub fn get_system_status() -> SystemStatus {
-    CACHED_STATUS
-        .read()
-        .unwrap()
-        .clone()
-        .unwrap_or_default()
+pub async fn get_system_status(kv: &KvStore) -> SystemStatus {
+    match kv.get(KV_KEY).json::<SystemStatus>().await {
+        Ok(Some(status)) => status,
+        _ => SystemStatus::default(),
+    }
 }
 
-#[inline]
-pub fn update_system_status(status: SystemStatus) {
-    *CACHED_STATUS.write().unwrap() = Some(status);
+pub async fn update_system_status(kv: &KvStore, status: SystemStatus) {
+    let _ = kv.put(KV_KEY, status).unwrap().execute().await;
 }

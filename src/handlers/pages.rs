@@ -1,19 +1,19 @@
 use askama::Template;
-use axum::response::Html;
+use axum::{extract::State, response::Html};
 use axum_cloudflare_adapter::wasm_compat;
 
 use crate::{
-    cache,
+    cache, AppState,
     models::{experience::parse_experiences, project::fetch_github_projects, Profile},
     templates::{ExperiencePage, HomePage, Layout, ProjectsPage},
 };
 
 #[wasm_compat]
-pub async fn home_page(req: axum::extract::Request) -> Html<String> {
+pub async fn home_page(State(state): State<AppState>, req: axum::extract::Request) -> Html<String> {
     let is_htmx = req.headers().get("hx-request").is_some();
 
     let profile = Profile::default();
-    let status = cache::get_system_status();
+    let status = cache::get_system_status(&state.kv).await;
 
     worker::console_log!(
         "Home page - Battery: {}%, Charging: {}, Location: {}",
