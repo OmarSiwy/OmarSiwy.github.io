@@ -66,7 +66,7 @@ pub fn parse_experiences() -> Vec<Experience> {
             title: "Programming Tutor".to_string(),
             company: "Self-employed".to_string(),
             company_url: None,
-            company_logo: None,
+            company_logo: Some("https://static.licdn.com/aero-v1/sc/h/3m4t0g3hsk43s738oetz5m4ta".to_string()),
             date: "Sep 2021 - Jul 2023".to_string(),
             bullets: vec![
                 "Teaching competitive programming to Waterloo CS applicants (CCC prep)".to_string(),

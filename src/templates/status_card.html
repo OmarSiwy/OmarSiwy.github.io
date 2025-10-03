@@ -1,0 +1,13 @@
+<div class="status-card" hx-get="/api/status-card" hx-trigger="every 60s" hx-swap="outerHTML">
+  <div class="status-grid">
+    <div class="status-item">
+      <small>Laptop</small>
+      <strong>🔋 {{ status.battery }}%</strong>
+    </div>
+    <div class="status-item">
+      <small>Location</small>
+      <strong>{{ status.location }}</strong>
+    </div>
+  </div>
+  <small class="status-timestamp">{{ status.time_ago() }}</small>
+</div>

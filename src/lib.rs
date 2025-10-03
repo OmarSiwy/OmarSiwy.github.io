@@ -72,9 +72,11 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
     let mut router = Router::new()
         .route("/", get(handlers::home_page))
         .route("/projects", get(handlers::projects_page))
+        .route("/projects/search", get(handlers::search_projects))
         .route("/experience", get(handlers::experience_page))
         .route("/resume.pdf", get(serve_resume))
         .route("/api/status", post(handlers::update_status))
+        .route("/api/status-card", get(handlers::status_card))
         .fallback(get(not_found))
         .with_state(state);
 

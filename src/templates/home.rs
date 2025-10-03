@@ -28,3 +28,9 @@ impl HomePage {
         }
     }
 }
+
+#[derive(Template)]
+#[template(path = "status_card.html")]
+pub struct StatusCard {
+    pub status: SystemStatus,
+}

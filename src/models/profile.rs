@@ -26,7 +26,7 @@ impl Default for Profile {
             socials: Socials {
                 github: "https://github.com/OmarSiwy",
                 linkedin: "https://www.linkedin.com/in/omar-el-sawy/",
-                instagram: "https://instagram.com/omarsiwy",
+                instagram: "https://instagram.com/omarsawe",
             },
         }
     }

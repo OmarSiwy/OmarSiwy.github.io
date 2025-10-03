@@ -48,25 +48,17 @@ section{margin-bottom:3rem}
 .download-section{text-align:center;margin-bottom:2rem}
 .download-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border:1px solid var(--border);text-decoration:none;color:var(--text-muted);font-size:.9rem;transition:all .2s}
 .download-btn:hover{color:var(--text);border-color:var(--text)}
-.timeline{max-width:46rem;margin:3rem auto 0;padding-left:2rem;position:relative}
-.timeline::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)}
-.timeline-item{position:relative;padding-bottom:2.5rem}
-.timeline-item:last-child{padding-bottom:0}
-.timeline-item:last-child .timeline-marker::after{display:none}
-.timeline-marker{position:absolute;left:-2rem;top:0;z-index:2}
-.timeline-marker::after{content:'';position:absolute;left:20px;top:44px;width:1px;height:calc(100% + 2.5rem);background:var(--border)}
-.timeline-logo{width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s}
-.timeline-logo:hover{transform:scale(1.08);box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--border)}
-.timeline-logo img{width:100%;height:100%;object-fit:cover}
-.timeline-logo a{display:block;width:100%;height:100%}
-.timeline-logo-placeholder{background:var(--border);color:var(--text-muted);font-size:1.1rem;font-weight:400}
-.timeline-content{margin-left:3rem;min-height:44px}
-.timeline-card{display:block;padding:.75rem 1rem;background:transparent;border-radius:6px;transition:background .15s;text-decoration:none;color:inherit}
-.timeline-card:hover{background:var(--border)}
-.timeline-card h3{margin:0 0 .35rem;font-size:.95rem;font-weight:400;color:var(--text)}
-.company-info{margin:0;font-size:.875rem;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;gap:1rem}
-.company-name{flex:1}
-.date{font-size:.8rem;color:var(--text-subtle);white-space:nowrap}
+.experience-list{display:flex;flex-direction:column;gap:1.5rem;margin-top:2rem;padding:2rem;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+.exp-item{display:flex;gap:1rem;align-items:flex-start;padding:1rem;border-radius:6px;transition:all .2s}
+.exp-item:hover{background:var(--border);transform:translateX(4px)}
+.exp-logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
+.exp-content{flex:1;min-width:0}
+.exp-header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.25rem}
+.exp-title{font-size:.95rem;font-weight:400;color:var(--text)}
+.exp-date{font-size:.8rem;color:var(--text-subtle);white-space:nowrap}
+.exp-company{font-size:.875rem;color:var(--text-muted)}
+.exp-company a{color:inherit;text-decoration:none;transition:color .2s}
+.exp-company a:hover{color:var(--text)}
 .project-split{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem}
 @media(max-width:768px){.project-split{grid-template-columns:1fr}}
 .project-section h3{margin-bottom:1.5rem}
@@ -85,10 +77,14 @@ footer small{color:var(--text-subtle);font-size:.85rem}
 .htmx-swapping{opacity:.4;transition:opacity .1s}
 #content{text-align:center;opacity:0;max-height:0;overflow:hidden;transition:opacity .5s ease,max-height .5s ease}
 #content.visible{opacity:1;max-height:5000px}
+.locked-in-gif{position:fixed;left:2rem;top:-200px;width:180px;height:180px;background:url('https://media.tenor.com/FDJ23uAl-AoAAAAM/neuron-activation-neuron.gif') center/contain no-repeat;opacity:0;pointer-events:none;z-index:50;transition:opacity .3s;transform:scaleX(-1);animation:slideDown 20s ease-in-out infinite}
+body[data-page='experience'] .locked-in-gif,body[data-page='projects'] .locked-in-gif{opacity:.7}
+@keyframes slideDown{0%{top:-200px}15%{top:10%}85%{top:calc(100vh - 200px)}100%{top:calc(100vh + 50px)}}
 </style>
 </head>
 <body class='initial'>
 <button class='theme-toggle' onclick='toggleTheme()' aria-label='Toggle theme'>◐</button>
+<div class='locked-in-gif'></div>
 <main class='container'>
 <nav>
 <h1>Omar El-Sawy</h1>
@@ -105,7 +101,9 @@ footer small{color:var(--text-subtle);font-size:.85rem}
 <script>
 function toggleTheme(){const html=document.documentElement;const current=html.getAttribute('data-theme');const next=current==='light'?'dark':'light';html.setAttribute('data-theme',next);localStorage.setItem('theme',next)}
 (function(){const saved=localStorage.getItem('theme');if(saved)document.documentElement.setAttribute('data-theme',saved)})()
-document.body.addEventListener('htmx:afterSettle',function(e){document.querySelectorAll('nav a').forEach(a=>{const path=new URL(a.href).pathname;a.classList.toggle('active',path===window.location.pathname)})})
+function updatePage(){const path=window.location.pathname;let page='home';if(path==='/experience')page='experience';else if(path==='/projects')page='projects';document.body.setAttribute('data-page',page)}
+updatePage()
+document.body.addEventListener('htmx:afterSettle',function(e){updatePage();document.querySelectorAll('nav a').forEach(a=>{const path=new URL(a.href).pathname;a.classList.toggle('active',path===window.location.pathname)})})
 let initialLoad=true;
 document.querySelectorAll('nav a').forEach(link=>{link.addEventListener('click',function(){if(initialLoad){initialLoad=false;setTimeout(()=>{document.getElementById('content').classList.add('visible');document.body.classList.remove('initial');document.body.classList.add('loaded')},400)}})})
 </script>
