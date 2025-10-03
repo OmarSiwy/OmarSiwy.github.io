@@ -2,10 +2,12 @@
 	"private": true,
 	"version": "0.0.0",
 	"scripts": {
-		"deploy": "wrangler publish",
-		"dev": "wrangler dev --local"
+		"build:resume": "rm -f public/resume.pdf src/models/resume.aux src/models/resume.log src/models/resume.out && cd src/models && pdflatex -interaction=nonstopmode resume.tex > /dev/null 2>&1; mv resume.pdf ../../public/ 2>/dev/null || true",
+		"predev": "mkdir -p public && npm run build:resume",
+		"deploy": "mkdir -p public && npm run build:resume && wrangler deploy",
+		"dev": "npm run predev && wrangler dev"
 	},
 	"devDependencies": {
-		"wrangler": "^3.84.1"
+		"wrangler": "^4.42.0"
 	}
 }

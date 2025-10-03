@@ -1,6 +1,21 @@
-name = "worker"
+name = "portfolio"
 main = "build/worker/shim.mjs"
-compatibility_date = "2023-03-22"
+compatibility_date = "2024-01-01"
+
+routes = [
+  { pattern = "omarelsawy.com", custom_domain = true },
+  { pattern = "www.omarelsawy.com", custom_domain = true }
+]
 
 [build]
-command = "cargo install worker-build && worker-build --release"
+command = "cargo install -q worker-build && worker-build --release"
+watch_dirs = ["src"]
+
+[build.upload]
+dir = "build/worker"
+format = "modules"
+main = "./shim.mjs"
+
+[[build.upload.rules]]
+globs = ["**/*.wasm"]
+type = "CompiledWasm"

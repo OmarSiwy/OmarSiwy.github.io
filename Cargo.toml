@@ -7,42 +7,40 @@ rust-version = "1.70.0"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[features]
-default = ["console_error_panic_hook"]
-
-[workspace]
-members = [
-    "graphics",
-]
-
 [dependencies]
 # Hosting
-axum = { version = "0.7.9", default-features = false, features = ["http1"] }
-hyper = { version = "1.5.1" }
-tower = { version = "0.5.1" }
-tower-service = { version = "0.3.2" }
-worker = "0.4.2"
+axum = { version = "0.8", default-features = false, features = [
+    "http1",
+    "query",
+    "macros",
+    "json",
+] }
+tower-service = "0.3.2"
+worker = "0.5"
 
 # Axum and Cloudflare integration
-axum-cloudflare-adapter = { version = "0.13.0" }
+axum-cloudflare-adapter = "0.14.0"
 
 # Templating
 askama = "0.12.1"
-serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.133"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
 
-# Error Handling
-anyhow = "1.0.93"
-cfg-if = "1.0.0"
+# WASM
+wasm-bindgen = "0.2.95"
+wasm-bindgen-futures = "0.4"
+oneshot = "0.1"
 
-# WASM-specific async runtime and HTTP client
-wasm-bindgen-futures = "0.4.34"
-url = "2.3.1"
-console_error_panic_hook = { version = "0.1.7", optional = true }
-oneshot = "0.1.6"
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen-futures = "0.4.45"
+[profile.dev]
+opt-level = 1
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-worker = "0.4.2"
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

@@ -1,0 +1,14 @@
+[Unit]
+Description=Portfolio Status Updater
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/omare/Documents/Projects/OmarSiwy.github.io/backgroundprocess/system-status-updater.sh
+Restart=always
+RestartSec=10
+User=omare
+
+[Install]
+WantedBy=default.target

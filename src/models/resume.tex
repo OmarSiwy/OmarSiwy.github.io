@@ -1,0 +1,261 @@
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{hyphenat}
+\usepackage{fontawesome}
+% \usepackage{fontawesome5}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\input{glyphtounicode}
+
+
+%---------- FONT OPTIONS ----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+\usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+
+\newcommand{\resumeSubSubheading}[2]{
+    \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeEducationHeading}[6]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \small{#2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+      \multicolumn{2}{p{\textwidth}}{\hspace{5mm}\textit{\small#5}} \\ % Indent bullet points
+      \multicolumn{2}{p{\textwidth}}{\hspace{5mm}\textit{\small#6}} \\
+    \end{tabular*}\vspace{-10pt} % Adjust this spacing to maintain closeness
+}
+
+\newcommand{\resumeProjectHeading}[3][]{
+    \vspace{-2pt}\item
+    \ifx&#1&
+        % No link provided, no indentation
+        \begin{tabular*}{1.0\textwidth}{l@{\extracolsep{\fill}}r}
+            \small{\textbf{#2}} & #3 \\
+        \end{tabular*}
+    \else
+        % Link provided, add icon and indentation
+        \begin{tabular*}{1.0\textwidth}{@{\hspace{-14pt}}l@{\extracolsep{\fill}}r}
+            \small{\textbf{{\faExternalLink}~\href{#1}{{#2}}}} & #3 \\
+        \end{tabular*}
+    \fi
+    \vspace{-22pt}
+}
+
+\newcommand{\resumeOrganizationHeading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textit{\small #2} \\
+      \textit{\small#3}
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+\begin{document}
+
+%---------- HEADING ----------
+{\centering
+    {\Huge\textbf{\textcolor{MidnightBlue}{Omar El-Sawy}}}\\[5pt] % Adjust the color as needed
+    \footnotesize
+    \hspace{.5pt} {+1 226-385-9028}
+    $|$
+    \faAt \hspace{.5pt} {okelsawy@uwaterloo.ca}
+    $|$
+    \faLinkedinSquare \hspace{.5pt} \href{https://www.linkedin.com/in/omar-el-sawy/}{linkedin.com/in/omar-el-sawy}
+    $|$
+    \faGithub \hspace{.5pt} \href{https://github.com/OmarSiwy}{github.com/OmarSiwy}
+    \par
+}
+
+\section{\textbf{Education}}
+  \vspace{3pt}
+    \begin{itemize}[leftmargin=*, label={}]
+      \resumeEducationHeading
+        {University of Waterloo}        % University name
+        {Sept. 2023 - Present}          % Date
+        {Candidate for BASc. Electrical Engineering with Honours, Co-op Program}   % Degree
+        {Waterloo, Ontario}             % Location
+        {$\bullet$ \textbf{Relevant Courses}: Electronic Circuits 1, Digital Circuits (VHDL, FPGA), Computer Architecture (RISC), C++ Programming (96\%),}  % Courses
+        {$\bullet$ \textbf{Extracurricular}: EE Academic Representative, EE Engineering Society Representative, Egyptian Student Association Treasurer} % Additional bullet point or other information
+    \end{itemize}
+
+%----------- SKILLS -----------
+\section{\textbf{Skills}}
+  \vspace{2pt}
+  \resumeSubHeadingListStart
+    \small{\item{
+        \textbf{RTL Tools:}{ SystemVerilog, Verilog, VHDL, TCL, UVM, CocoaTB } \\ \vspace{3pt}
+
+        \textbf{Analog Tools:}{ Cadence Innovus, XSchem, NGSpice, KLayout, Magic, Altium Designer, KiCAD } \\ \vspace{3pt}
+
+        \textbf{Programming:}{ Python, Matlab, C, C++, Rust, Zig } \\ \vspace{3pt}
+
+        \textbf{Currently Learning:}{ Analog/Digital Computer Arithmetic (Grad-Level Course) } \\ \vspace{3pt}
+    }}
+  \resumeSubHeadingListEnd
+
+%----------- WORK EXPERIENCE -----------
+\section{\textbf{Experience}}
+  \vspace{3pt}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\textbf{Analog IC Design Team-Lead} $|$ \footnotesize{\href{https://uwasic.com/}{UWASIC}}}
+      {\small{May. 2025 - Current}}
+        \resumeItemListStart
+            \resumeItem{Led analog \textbf{\href{https://github.com/UW-ASIC/Matrix-Vector-Multiplier}{Matrix-Vector-Multiplier}} system design integrating precision ADCs, DACs, AXI I/O interfaces, and current sensors for analog multiplication operations, managing mixed-signal design synchronization, preventing analog-digital data race-conditions}
+
+            \resumeItem{Developed multiple schematic optimization iterative algorithm incorporating target parameter analysis for higher-order effects including process variations and temperature drift using Ngspice simulation results as reference per iteration \textbf{\href{https://github.com/UW-ASIC/UWASIC-ALG}{UWASIC-Optimizer}}}
+
+            \resumeItem{Designed schematic/layout of \textbf{\href{https://github.com/UW-ASIC/AnalogLibrary}{Miller Operational Amplifier}} with compensation, simulating slew of 32V/μs and 70dB open-loop gain}
+
+            \resumeItem{Implemented compressed AXI protocol interface optimized for limited chip pin count and synchronization with ADC/DAC}
+
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{Digital Hardware Verification Intern} $|$ \footnotesize{\href{https://www.amd.com/en.html}{AMD}}}
+      {\small{Jul. 2025 - Aug. 2025}}
+        \resumeItemListStart
+            \resumeItem{Migrated regression testing infrastructure to Synopsis EMAN platform, refactoring UVM testbenches to ensure compatibility}
+
+            \resumeItem{Developed Python GUIs for SOC power analysis workflows, automating data visualization and tree-view organization of modules}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{Digital Hardware Design Intern} $|$ \footnotesize{\href{https://www.untether.ai/}{Untether AI}}}
+      {\small{May. 2025 - Jul. 2025}}
+        \resumeItemListStart
+            \resumeItem{Designed and implemented PCIe protocol interrupt functionality in SystemVerilog, developing exception detection logic for Network-On-Chip packets and implementing Message-Signaled Interrupt generation to enable reliable chip-to-host error reporting}
+
+            \resumeItem{Implemented Low-Latency Fair Arbiter \href{https://www.mdpi.com/2076-3417/12/23/12458}{(Research)}, achieving increased system throughput and maximum operating frequency}
+
+            \resumeItem{Resolved 277 Clock Domain Crossing (CDC) violations in the chip-to-host interconnect module using Synopsis SpyGlass, systematically addressing setup stage violations and convergence stage coherency issues to ensure timing closure}
+
+            \resumeItem{Developed comprehensive testbenches to validate socket handling mechanisms for faulty packet detection and exception logic}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{PCB Hardware Design Intern} $|$ \footnotesize{MemsVision}}
+      {\small{Sept. 2024 - Dec. 2024}}
+        \resumeItemListStart
+            \resumeItem{Designed and soldered a 256 to 64 signal multiplexer board to automate testing for 256 signals, capturing data via an oscilloscope interfaced with PyVisa, re-purposing the board for capacitance testing, visualizing shorts and opens with heatmaps}
+
+            \resumeItem{Rewrote firmware for Piezoelectric-Ultrasound sensor water-level testing board, reducing switching noise by putting the MCU to sleep during capture and implementing polling-based USB CDC with packed bytes in Big Endian format for faster storage}
+
+            \resumeItem{Optimized ultrasound sensor USB HID interface, implementing USB CDC with packed bytes, boosting data acquisition by 1123\%}
+
+            \resumeItem{Designed a modular PIC18F4550 interface board with improved signal and power integrity, supporting SPI and I2C on shared pins}
+        \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+%----------- PROJECTS -----------
+\section{\textbf{Projects}}
+  \vspace{3pt}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading[https://github.com/OmarSiwy/RISC-V-CPU]
+      {\textbf{PICO-RV32 -- Tiny 32-bit RISCV CPU} $|$ \footnotesize{\textbf{SystemVerilog}, \textbf{Xilinx}, \textbf{RTL}}}
+      {}
+        \resumeItemListStart
+           \resumeItem{Implementing a 5-stage pipelined RV32E CPU core with forwarding paths and hazard detection unit for efficient execution}
+           \resumeItem{Designed an area-optimized ALU and control unit supporting the RV32E base instruction set focusing on size optimization}
+           \resumeItem{Developed testbenches and verification infrastructure using SystemVerilog to ensure correct functionality of CPU modules}
+        \resumeItemListEnd
+
+     \resumeProjectHeading[https://github.com/OmarSiwy]
+      {\textbf{HVAC System -- Cooling and Heating System} $|$ \footnotesize{\textbf{FPGA}, \textbf{VHDL}, \textbf{Quartus}, \textbf{TCL}}}
+      {}
+        \resumeItemListStart
+          \resumeItem{Designed a digital HVAC system using a Mealy State Machine and flip-flops for state memory, using TCL scripts for Pin Mapping}
+
+          \resumeItem{Performed timing analysis using Quartus, ensuring the design met all timing requirements and operated reliably within FPGA}
+        \resumeItemListEnd
+
+        \resumeProjectHeading[https://github.com/OmarSiwy/CileExplorer]
+        {\textbf{Cile-Explorer -- GPU-Powered File Explorer} $|$ \footnotesize{\textbf{C}, \textbf{CUDA}, GTK, \textbf{Linux}}}
+        {}
+          \resumeItemListStart
+                \resumeItem{Developed a low-level file system interface achieving 4ms search times for 1000 files through CUDA kernel parallel processing}
+                \resumeItem{Implemented shared memory between CPU and GPU using CUDA streams and asynchronous execution for max throughput}
+          \resumeItemListEnd
+\resumeSubHeadingListEnd
+%-------------------------------------------
+\end{document}

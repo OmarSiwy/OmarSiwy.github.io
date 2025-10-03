@@ -1,9 +1,44 @@
+# Rust
 /target
-node_modules
-# build
-.wrangler
-.cargo
+Cargo.lock
 
-**/Cargo.lock
-**/package-lock.json
-**/bun.lockb
+# Node.js
+node_modules
+package-lock.json
+bun.lockb
+
+# Cloudflare Workers
+.wrangler
+build/
+dist/
+
+# Development
+.cargo
+.env
+.env.local
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nix
+result
+result-*
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# Public assets (generated at build time)
+public/
