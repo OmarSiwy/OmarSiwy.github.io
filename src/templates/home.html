@@ -1,70 +1,377 @@
-<article class="about-section">
-  <p>
-    Waterloo Electrical Engineering student passionate about Mixed-Signal
-    Design, connecting analog and digital through hands-on experience, from
-    energy-efficient analog designs to accelerator chip interconnects and
-    digital verification.
-  </p>
-</article>
+<div class="about-container">
+  <article class="about-section">
+    <p>
+      Third Year Waterloo Electrical Engineering student, passionate about Mixed-Signal Design for Energy Efficiency and ML Systems.
+    </p>
+  </article>
 
-<div class="status-card" hx-get="/api/status-card" hx-trigger="every 60s" hx-swap="outerHTML">
-  <div class="status-grid">
-    <div class="status-item">
-      <small>Laptop</small>
-      <strong>🔋 {{ status.battery }}%</strong>
+  <div class="status-card" hx-get="/api/status-card" hx-trigger="every 30s" hx-swap="outerHTML">
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-label">Laptop</span>
+        <span class="status-value">🔋 {{ status.battery }}%</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Location</span>
+        <span class="status-value">{{ status.location }}</span>
+      </div>
     </div>
-    <div class="status-item">
-      <small>Location</small>
-      <strong>{{ status.location }}</strong>
+
+    {% match status.spotify %}
+    {% when Some with (spotify) %}
+    <div class="spotify-section">
+      <div class="spotify-content">
+        {% match spotify.album_art %}
+        {% when Some with (art) %}
+        <img src="{{ art }}" alt="{{ spotify.track_name }}" class="spotify-art">
+        {% when None %}
+        {% endmatch %}
+        <div class="spotify-info">
+          <span class="spotify-label">{% if spotify.is_playing %}Currently Playing{% else %}Last Played{% endif %}</span>
+          <div class="spotify-track">{{ spotify.track_name }}</div>
+          <div class="spotify-artist">{{ spotify.artist_name }}</div>
+        </div>
+      </div>
+      {% if spotify.is_playing %}
+      {% match spotify.position_ms %}
+      {% when Some with (position) %}
+      {% match spotify.duration_ms %}
+      {% when Some with (duration) %}
+      <div class="spotify-progress">
+        <div class="spotify-progress-bar" style="width: {{ (position * 100) / duration }}%" data-position="{{ position }}" data-duration="{{ duration }}"></div>
+      </div>
+      {% when None %}
+      {% endmatch %}
+      {% when None %}
+      {% endmatch %}
+      {% endif %}
     </div>
+    {% when None %}
+    {% endmatch %}
+
+    <time class="status-timestamp">{{ status.time_ago() }}</time>
   </div>
-  <small class="status-timestamp">{{ status.time_ago() }}</small>
+
+  {% match status.map_url() %}
+  {% when Some with (url) %}
+  <div class="location-map">
+    <span class="map-label">My Current Location</span>
+    <iframe
+      width="100%"
+      height="300"
+      frameborder="0"
+      src="{{ url }}"
+      allowfullscreen>
+    </iframe>
+  </div>
+  {% when None %}
+  {% endmatch %}
+
+  <section class="connect-section">
+    <h3>Connect</h3>
+    <div class="social-links">
+      <a href="{{ profile.socials.github }}" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2A10 10 0 002 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+      <a href="{{ profile.socials.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14m-.5 15.5v-5.3a3.26 3.26 0 00-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 011.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 001.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 00-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+        </svg>
+        <span>LinkedIn</span>
+      </a>
+      <a href="{{ profile.socials.instagram }}" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 01-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 017.8 2m-.2 2A3.6 3.6 0 004 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 003.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 011.25 1.25A1.25 1.25 0 0117.25 8 1.25 1.25 0 0116 6.75a1.25 1.25 0 011.25-1.25M12 7a5 5 0 015 5 5 5 0 01-5 5 5 5 0 01-5-5 5 5 0 015-5m0 2a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3z"/>
+        </svg>
+        <span>Instagram</span>
+      </a>
+    </div>
+  </section>
+
+  <footer class="about-footer">
+    <a href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+  </footer>
 </div>
 
-{% if status.map_url().is_some() %}
-<div class="location-map">
-  <p style="margin-bottom:.75rem;color:var(--text-muted);font-size:.9rem">My Current Location</p>
-  <iframe
-    width="100%"
-    height="300"
-    frameborder="0"
-    style="border:1px solid var(--border);border-radius:6px"
-    src="{{ status.map_url().unwrap() }}"
-    allowfullscreen>
-  </iframe>
-</div>
-{% endif %}
+<style>
+.about-container {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
 
-<section>
-  <h3>Connect</h3>
-  <div class="social-links">
-    <a href="{{ profile.socials.github }}" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path
-          d="M12 2A10 10 0 002 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"
-        />
-      </svg>
-      GitHub
-    </a>
-    <a href="{{ profile.socials.linkedin }}" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path
-          d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14m-.5 15.5v-5.3a3.26 3.26 0 00-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 011.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 001.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 00-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"
-        />
-      </svg>
-      LinkedIn
-    </a>
-    <a href="{{ profile.socials.instagram }}" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path
-          d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 01-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 017.8 2m-.2 2A3.6 3.6 0 004 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 003.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 011.25 1.25A1.25 1.25 0 0117.25 8 1.25 1.25 0 0116 6.75a1.25 1.25 0 011.25-1.25M12 7a5 5 0 015 5 5 5 0 01-5 5 5 5 0 01-5-5 5 5 0 015-5m0 2a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3z"
-        />
-      </svg>
-      Instagram
-    </a>
-  </div>
-</section>
+.about-section {
+  margin-bottom: 3rem;
+}
 
-<footer>
-  <small>{{ profile.email }}</small>
-</footer>
+.about-section p {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #333;
+  margin: 0;
+}
+
+/* Status Card */
+.status-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Spotify Section (inside status card) */
+.spotify-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.spotify-content {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.spotify-art {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.spotify-info {
+  min-width: 0;
+}
+
+.spotify-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.spotify-track {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0.125rem;
+}
+
+.spotify-artist {
+  font-size: 0.875rem;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spotify-progress {
+  margin-top: 1rem;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spotify-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1db954, #1ed760);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  font-weight: 500;
+}
+
+.status-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.status-timestamp {
+  display: block;
+  font-size: 0.75rem;
+  color: #999;
+  text-align: right;
+}
+
+/* Location Map */
+.location-map {
+  margin-bottom: 2.5rem;
+}
+
+.map-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.location-map iframe {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  width: 100%;
+  height: 300px;
+}
+
+/* Connect Section */
+.connect-section {
+  margin-bottom: 2.5rem;
+}
+
+.connect-section h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin: 0 0 1rem;
+  font-weight: 500;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.social-links a:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.social-links svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Footer */
+.about-footer {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.about-footer a {
+  font-size: 0.875rem;
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.about-footer a:hover {
+  color: #111;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .about-section p {
+    font-size: 1rem;
+  }
+
+  .status-grid {
+    gap: 1.5rem;
+  }
+
+  .social-links {
+    flex-direction: column;
+  }
+
+  .social-links a {
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+(function() {
+  function animateSpotifyProgress() {
+    const progressBar = document.querySelector('.spotify-progress-bar');
+    if (!progressBar) return;
+
+    const parentCard = progressBar.closest('.status-card');
+    if (!parentCard) return;
+
+    // Extract data attributes we'll add to the progress bar
+    const position = parseInt(progressBar.dataset.position);
+    const duration = parseInt(progressBar.dataset.duration);
+
+    if (!position || !duration) return;
+
+    const startTime = Date.now();
+    const startPosition = position;
+
+    function updateProgress() {
+      const elapsed = Date.now() - startTime;
+      const currentPosition = startPosition + elapsed;
+      const percentage = Math.min((currentPosition / duration) * 100, 100);
+
+      progressBar.style.width = percentage + '%';
+
+      if (percentage < 100) {
+        requestAnimationFrame(updateProgress);
+      }
+    }
+
+    requestAnimationFrame(updateProgress);
+  }
+
+  // Run on page load
+  animateSpotifyProgress();
+
+  // Re-run after HTMX swaps
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.classList.contains('status-card')) {
+      setTimeout(animateSpotifyProgress, 50);
+    }
+  });
+})();
+</script>

@@ -1,31 +1,172 @@
-<div class='download-section'>
-  <a href='/resume.pdf' download class='download-btn'>
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-    Download Resume PDF
-  </a>
-</div>
-
-<h2>Experience</h2>
-
-<div class='experience-list'>
-  {% for exp in experiences %}
-  <div class='exp-item'>
-    {% if exp.company_logo.is_some() %}
-    <img src='{{ exp.company_logo.as_ref().unwrap() }}' alt='{{ exp.company }}' class='exp-logo'>
-    {% endif %}
-    <div class='exp-content'>
-      <div class='exp-header'>
-        <span class='exp-title'>{{ exp.title }}</span>
-        <span class='exp-date'>{{ exp.date }}</span>
-      </div>
-      <div class='exp-company'>
-        {% if exp.company_url.is_some() %}
-        <a href='{{ exp.company_url.as_ref().unwrap() }}' target='_blank' rel='noopener'>{{ exp.company }}</a>
-        {% else %}
-        {{ exp.company }}
-        {% endif %}
-      </div>
-    </div>
+<div class='resume-container'>
+  <div class='resume-header'>
+    <h2>Experience</h2>
+    <a href='/resume.pdf' download class='download-btn'>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      Resume
+    </a>
   </div>
-  {% endfor %}
+
+  <div class='experience-list'>
+    {% for exp in experiences %}
+    <article class='exp-item'>
+      {% if exp.company_logo.is_some() %}
+      <img src='{{ exp.company_logo.as_ref().unwrap() }}' alt='{{ exp.company }}' class='exp-logo'>
+      {% endif %}
+      <div class='exp-content'>
+        <div class='exp-header'>
+          <h3>{{ exp.title }}</h3>
+          <time>{{ exp.date }}</time>
+        </div>
+        <div class='exp-company'>
+          {% if exp.company_url.is_some() %}
+          <a href='{{ exp.company_url.as_ref().unwrap() }}' target='_blank' rel='noopener'>{{ exp.company }}</a>
+          {% else %}
+          {{ exp.company }}
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
 </div>
+
+<style>
+.resume-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.resume-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.resume-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #333;
+  text-decoration: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.download-btn:hover {
+  border-color: #333;
+  background: #fafafa;
+}
+
+.download-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.exp-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.exp-item:hover {
+  background: #fafafa;
+}
+
+.exp-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #f0f0f0;
+}
+
+.exp-content {
+  min-width: 0;
+}
+
+.exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.exp-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.exp-header time {
+  font-size: 0.875rem;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.exp-company {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.exp-company a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.exp-company a:hover {
+  color: #111;
+}
+
+@media (max-width: 640px) {
+  .resume-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .exp-item {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .exp-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .exp-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+</style>

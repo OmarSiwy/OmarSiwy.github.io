@@ -1,13 +1,51 @@
-<div class="status-card" hx-get="/api/status-card" hx-trigger="every 60s" hx-swap="outerHTML">
+<div
+  class="status-card"
+  hx-get="/api/status-card"
+  hx-trigger="every 30s"
+  hx-swap="outerHTML"
+>
   <div class="status-grid">
     <div class="status-item">
-      <small>Laptop</small>
-      <strong>🔋 {{ status.battery }}%</strong>
+      <span class="status-label">Laptop</span>
+      <span class="status-value">🔋 {{ status.battery }}%</span>
     </div>
     <div class="status-item">
-      <small>Location</small>
-      <strong>{{ status.location }}</strong>
+      <span class="status-label">Location</span>
+      <span class="status-value">{{ status.location }}</span>
     </div>
   </div>
-  <small class="status-timestamp">{{ status.time_ago() }}</small>
+
+  {% match status.spotify %}
+  {% when Some with (spotify) %}
+  <div class="spotify-section">
+    <div class="spotify-content">
+      {% match spotify.album_art %}
+      {% when Some with (art) %}
+      <img src="{{ art }}" alt="{{ spotify.track_name }}" class="spotify-art">
+      {% when None %}
+      {% endmatch %}
+      <div class="spotify-info">
+        <span class="spotify-label">{% if spotify.is_playing %}Currently Playing{% else %}Last Played{% endif %}</span>
+        <div class="spotify-track">{{ spotify.track_name }}</div>
+        <div class="spotify-artist">{{ spotify.artist_name }}</div>
+      </div>
+    </div>
+    {% if spotify.is_playing %}
+    {% match spotify.position_ms %}
+    {% when Some with (position) %}
+    {% match spotify.duration_ms %}
+    {% when Some with (duration) %}
+    <div class="spotify-progress">
+      <div class="spotify-progress-bar" style="width: {{ (position * 100) / duration }}%" data-position="{{ position }}" data-duration="{{ duration }}"></div>
+    </div>
+    {% when None %}
+    {% endmatch %}
+    {% when None %}
+    {% endmatch %}
+    {% endif %}
+  </div>
+  {% when None %}
+  {% endmatch %}
+
+  <time class="status-timestamp">{{ status.time_ago() }}</time>
 </div>

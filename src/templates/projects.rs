@@ -23,65 +23,100 @@ impl ProjectsPage {
             }
         }
 
-        Self { software, hardware, both }
+        Self {
+            software,
+            hardware,
+            both,
+        }
     }
 
     pub fn render_results(&self) -> String {
-        let mut sections = Vec::new();
+        let mut result = String::new();
 
-        if !self.hardware.is_empty() {
-            sections.push(format!(
-                r#"<div class='project-section'>
-      <h3>Hardware</h3>
-      {}
-    </div>"#,
-                self.render_project_list(&self.hardware)
-            ));
+        // Hardware and Software sections (side-by-side)
+        if !self.hardware.is_empty() || !self.software.is_empty() {
+            result.push_str("<div class='project-split'>");
+
+            if !self.hardware.is_empty() {
+                result.push_str(&format!(
+                    r#"
+<section class='project-section'>
+  <h3>Hardware</h3>
+  {}
+</section>"#,
+                    self.render_project_cards(&self.hardware, false)
+                ));
+            }
+
+            if !self.software.is_empty() {
+                result.push_str(&format!(
+                    r#"
+<section class='project-section'>
+  <h3>Software</h3>
+  {}
+</section>"#,
+                    self.render_project_cards(&self.software, false)
+                ));
+            }
+
+            result.push_str("</div>");
         }
 
+        // Hardware + Software section (full width)
         if !self.both.is_empty() {
-            sections.push(format!(
-                r#"<div class='project-section'>
-      <h3>Hardware/Software</h3>
-      {}
-    </div>"#,
-                self.render_project_list(&self.both)
+            result.push_str(&format!(
+                r#"
+<section class='project-section-full'>
+  <h3>Hardware + Software</h3>
+  <div class='projects-grid'>
+    {}
+  </div>
+</section>"#,
+                self.render_project_cards(&self.both, true)
             ));
         }
 
-        if !self.software.is_empty() {
-            sections.push(format!(
-                r#"<div class='project-section'>
-      <h3>Software</h3>
-      {}
-    </div>"#,
-                self.render_project_list(&self.software)
-            ));
-        }
-
-        format!(r#"<div class='project-split'>{}</div>"#, sections.join("\n"))
+        result
     }
 
-    fn render_project_list(&self, projects: &[Project]) -> String {
+    fn render_project_cards(&self, projects: &[Project], is_wide: bool) -> String {
         projects
             .iter()
             .map(|p| {
-                let image = p.image.as_ref().map(|img| {
-                    format!(r#"<img src='{}' alt='{}' class='project-image'>"#, img, p.name)
-                }).unwrap_or_default();
-                
-                let link = p.link.as_ref().map(|url| {
-                    format!(r#"<small><a href='{}' target='_blank' rel='noopener'>View →</a></small>"#, url)
-                }).unwrap_or_default();
-                
+                let card_class = if is_wide {
+                    "project-card-wide"
+                } else {
+                    "project-card"
+                };
+
+                let image = p
+                    .image
+                    .as_ref()
+                    .map(|img| format!(r#"<img src='{}' alt='{}'>"#, img, p.name))
+                    .unwrap_or_default();
+
+                let link = p
+                    .link
+                    .as_ref()
+                    .map(|url| {
+                        format!(
+                            r#"<a href='{}' target='_blank' rel='noopener'>View →</a>"#,
+                            url
+                        )
+                    })
+                    .unwrap_or_default();
+
                 format!(
-                    r#"<div class='project-card'>
-        {}
-        <p>{}</p>
-        <div class='tech'>{}</div>
-        {}
-      </div>"#,
+                    r#"<article class='{}'>
+  {}
+  <h4>{}</h4>
+  <p>{}</p>
+  <span class='tech'>{}</span>
+  {}
+</article>"#,
+                    card_class,
                     image,
+                    p.name,
                     p.description,
                     p.tech.join(", "),
                     link

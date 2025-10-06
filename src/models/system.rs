@@ -10,6 +10,21 @@ pub struct SystemStatus {
     pub latitude: Option<f64>,
     #[serde(default)]
     pub longitude: Option<f64>,
+    #[serde(default)]
+    pub spotify: Option<SpotifyStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SpotifyStatus {
+    pub is_playing: bool,
+    pub track_name: String,
+    pub artist_name: String,
+    #[serde(default)]
+    pub album_art: Option<String>,
+    #[serde(default)]
+    pub position_ms: Option<u64>,
+    #[serde(default)]
+    pub duration_ms: Option<u64>,
 }
 
 impl Default for SystemStatus {
@@ -21,6 +36,20 @@ impl Default for SystemStatus {
             timestamp: 0,
             latitude: None,
             longitude: None,
+            spotify: None,
+        }
+    }
+}
+
+impl Default for SpotifyStatus {
+    fn default() -> Self {
+        Self {
+            is_playing: false,
+            track_name: "Nothing yet".to_string(),
+            artist_name: String::new(),
+            album_art: None,
+            position_ms: None,
+            duration_ms: None,
         }
     }
 }
@@ -49,7 +78,6 @@ impl SystemStatus {
     pub fn time_ago(&self) -> String {
         let now = worker::Date::now().as_millis() as u64 / 1000;
         let diff = now.saturating_sub(self.timestamp);
-
         match diff {
             0..=59 => "just now".to_string(),
             60..=119 => "1 minute ago".to_string(),
@@ -64,8 +92,8 @@ impl SystemStatus {
     #[inline]
     pub fn map_url(&self) -> Option<String> {
         if let (Some(lat), Some(lon)) = (self.latitude, self.longitude) {
-            let zoom = 13;
-            let delta = 0.03;
+            let zoom = 15;
+            let delta = 0.01;
             Some(format!(
                 "https://www.openstreetmap.org/export/embed.html?bbox={},{},{},{}&layer=mapnik&marker={},{}&zoom={}",
                 lon - delta, lat - delta, lon + delta, lat + delta, lat, lon, zoom
