@@ -42,7 +42,6 @@
           {% if project.image.is_some() %}
           <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}'>
           {% endif %}
-          <h4>{{ project.name }}</h4>
           <p>{{ project.description }}</p>
           <span class='tech'>{{ project.tech|join(", ") }}</span>
           {% if project.link.is_some() %}
