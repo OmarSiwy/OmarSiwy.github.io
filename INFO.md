@@ -1,7 +1,7 @@
 ---
-description: "Ultra-fast personal portfolio with <1ms response times"
+description: "Personal portfolio site built with Rust as a learning project. Combines HTMX for dynamic interactions with WebAssembly for performance, deployed on Cloudflare's edge infrastructure."
 category: "Software"
 tech: ["Rust", "HTMX", "WASM", "Cloudflare"]
-image: "https://raw.githubusercontent.com/username/repo/main/screenshot.png"
+image: ""
 year: 2025
 ---

@@ -62,10 +62,7 @@ pub async fn projects_page(req: axum::extract::Request) -> Html<String> {
     let is_htmx = req.headers().get("hx-request").is_some();
 
     let projects = fetch_github_projects().await;
-    let (hardware, software): (Vec<_>, Vec<_>) = projects
-        .into_iter()
-        .partition(|p| matches!(p.category, crate::models::ProjectCategory::Hardware));
-    let page = ProjectsPage::new(hardware, software);
+    let page = ProjectsPage::new(projects);
     let content = page.render().unwrap();
 
     if is_htmx {
@@ -89,7 +86,6 @@ pub async fn status_card(State(state): State<AppState>) -> Html<String> {
 
 #[wasm_compat]
 pub async fn search_projects(req: axum::extract::Request) -> Html<String> {
-    use axum::extract::Query;
     use std::collections::HashMap;
 
     let query_string = req.uri().query().unwrap_or("");
@@ -113,11 +109,7 @@ pub async fn search_projects(req: axum::extract::Request) -> Html<String> {
             .collect()
     };
 
-    let (hardware, software): (Vec<_>, Vec<_>) = filtered
-        .into_iter()
-        .partition(|p| matches!(p.category, crate::models::ProjectCategory::Hardware));
-
-    let page = ProjectsPage::new(hardware, software);
+    let page = ProjectsPage::new(filtered);
     Html(page.render_results())
 }
 

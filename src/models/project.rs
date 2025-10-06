@@ -6,6 +6,18 @@ use std::sync::OnceLock;
 pub enum ProjectCategory {
     Software = 0,
     Hardware = 1,
+    Both = 2,
+}
+
+impl ProjectCategory {
+    #[inline]
+    fn from_str(s: &str) -> Self {
+        match s {
+            "Hardware" => Self::Hardware,
+            "Software/Hardware" | "Hardware/Software" | "Both" => Self::Both,
+            _ => Self::Software,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -33,7 +45,7 @@ impl Project {
 // INFO.md metadata format (YAML frontmatter):
 // ---
 // description: "Your project description"
-// category: "Software" or "Hardware"
+// category: "Software" or "Hardware" or "Software/Hardware"
 // tech: ["Rust", "WASM", "Cloudflare"]
 // image: "https://example.com/image.png"
 // year: 2025
@@ -43,7 +55,9 @@ struct ProjectMetadata {
     description: String,
     category: String,
     tech: Vec<String>,
+    #[serde(default)]
     image: Option<String>,
+    #[serde(default)]
     year: Option<u16>,
 }
 
@@ -57,11 +71,12 @@ struct GitHubRepo {
 static CACHED_PROJECTS: OnceLock<Vec<Project>> = OnceLock::new();
 const GITHUB_USERNAME: &str = "OmarSiwy";
 
-// Additional repos you contributed to (format: "owner/repo")
+// Additional repos
 const CONTRIBUTED_REPOS: &[&str] = &[
-    // Add repos here, e.g.:
-    // "torvalds/linux",
-    // "rust-lang/rust",
+    "UW-ASIC/Matrix-Vector-Multiplier",
+    "UW-ASIC/TinyTapeout_Flows",
+    "UW-ASIC/UWASIC-ALG",
+    "UW-ASIC/AnalogLibrary",
 ];
 
 /// Fetch projects from GitHub API and parse INFO.md for metadata
@@ -195,7 +210,15 @@ async fn fetch_project_from_repo(
 
                     let category = match metadata.category.as_str() {
                         "Hardware" => ProjectCategory::Hardware,
+                        "Software/Hardware" | "Hardware/Software" | "Both" => ProjectCategory::Both,
                         _ => ProjectCategory::Software,
+                    };
+
+                    // If no image provided in INFO.md, try to extract from README
+                    let image = if metadata.image.is_none() {
+                        extract_first_image_from_readme(owner, repo_name).await
+                    } else {
+                        metadata.image
                     };
 
                     return Some(Project {
@@ -205,9 +228,66 @@ async fn fetch_project_from_repo(
                         category,
                         tech: metadata.tech,
                         link: Some(html_url.to_string()),
-                        image: metadata.image,
+                        image,
                         year,
                     });
+                }
+            }
+        }
+    }
+
+    None
+}
+
+async fn extract_first_image_from_readme(owner: &str, repo_name: &str) -> Option<String> {
+    let readme_url = format!(
+        "https://raw.githubusercontent.com/{}/{}/main/README.md",
+        owner, repo_name
+    );
+
+    let mut opts = worker::RequestInit::new();
+    opts.headers = {
+        let mut headers = worker::Headers::new();
+        headers.set("User-Agent", "portfolio-site").ok()?;
+        headers
+    };
+
+    let request = worker::Request::new_with_init(&readme_url, &opts).ok()?;
+
+    if let Ok(mut response) = worker::Fetch::Request(request).send().await {
+        if response.status_code() == 200 {
+            if let Ok(content) = response.text().await {
+                return parse_first_markdown_image(&content, owner, repo_name);
+            }
+        }
+    }
+
+    None
+}
+
+fn parse_first_markdown_image(content: &str, owner: &str, repo_name: &str) -> Option<String> {
+    // Find the first occurrence of ![...](...)
+    for line in content.lines() {
+        if let Some(start) = line.find("![") {
+            if let Some(mid) = line[start..].find("](") {
+                let url_start = start + mid + 2;
+                if let Some(end) = line[url_start..].find(')') {
+                    let img_url = line[url_start..url_start + end].trim();
+
+                    // Handle different URL types
+                    if img_url.starts_with("http://") || img_url.starts_with("https://") {
+                        return Some(img_url.to_string());
+                    } else if img_url.starts_with('/') {
+                        return Some(format!(
+                            "https://raw.githubusercontent.com/{}/{}/main{}",
+                            owner, repo_name, img_url
+                        ));
+                    } else {
+                        return Some(format!(
+                            "https://raw.githubusercontent.com/{}/{}/main/{}",
+                            owner, repo_name, img_url
+                        ));
+                    }
                 }
             }
         }

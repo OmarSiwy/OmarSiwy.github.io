@@ -1,39 +1,204 @@
 <div class='search-bar'>
-  <input type='search' placeholder='Search projects...' hx-get='/projects/search' hx-trigger='keyup changed delay:200ms' hx-target='#project-results' name='q'>
+  <input
+    type='search'
+    placeholder='Search projects...'
+    hx-get='/projects/search'
+    hx-trigger='keyup changed delay:200ms'
+    hx-target='#project-results-inner'
+    name='q'>
 </div>
 
 <div id='project-results'>
-  <div class='project-split'>
-    <div class='project-section'>
-      <h3>Hardware</h3>
-      {% for project in hardware %}
-      <div class='project-card'>
-        {% if project.image.is_some() %}
-        <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}' class='project-image'>
-        {% endif %}
-        <p>{{ project.description }}</p>
-        <div class='tech'>{{ project.tech|join(", ") }}</div>
-        {% if project.link.is_some() %}
-        <small><a href='{{ project.link.as_ref().unwrap() }}' target='_blank' rel='noopener'>View →</a></small>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
+  <div id='project-results-inner'>
 
-    <div class='project-section'>
-      <h3>Software</h3>
-      {% for project in software %}
-      <div class='project-card'>
-        {% if project.image.is_some() %}
-        <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}' class='project-image'>
-        {% endif %}
-        <p>{{ project.description }}</p>
-        <div class='tech'>{{ project.tech|join(", ") }}</div>
-        {% if project.link.is_some() %}
-        <small><a href='{{ project.link.as_ref().unwrap() }}' target='_blank' rel='noopener'>View →</a></small>
-        {% endif %}
-      </div>
-      {% endfor %}
+    {% if !hardware.is_empty() || !software.is_empty() %}
+    <div class='project-split'>
+      {% if !hardware.is_empty() %}
+      <section class='project-section'>
+        <h3>Hardware</h3>
+        {% for project in hardware %}
+        <article class='project-card'>
+          {% if project.image.is_some() %}
+          <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}'>
+          {% endif %}
+          <h4>{{ project.name }}</h4>
+          <p>{{ project.description }}</p>
+          <span class='tech'>{{ project.tech|join(", ") }}</span>
+          {% if project.link.is_some() %}
+          <a href='{{ project.link.as_ref().unwrap() }}' target='_blank' rel='noopener'>View →</a>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </section>
+      {% endif %}
+
+      {% if !software.is_empty() %}
+      <section class='project-section'>
+        <h3>Software</h3>
+        {% for project in software %}
+        <article class='project-card'>
+          {% if project.image.is_some() %}
+          <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}'>
+          {% endif %}
+          <h4>{{ project.name }}</h4>
+          <p>{{ project.description }}</p>
+          <span class='tech'>{{ project.tech|join(", ") }}</span>
+          {% if project.link.is_some() %}
+          <a href='{{ project.link.as_ref().unwrap() }}' target='_blank' rel='noopener'>View →</a>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </section>
+      {% endif %}
     </div>
+    {% endif %}
+
+    {% if !both.is_empty() %}
+    <section class='project-section-full'>
+      <h3>Hardware + Software</h3>
+      <div class='projects-grid'>
+        {% for project in both %}
+        <article class='project-card-wide'>
+          {% if project.image.is_some() %}
+          <img src='{{ project.image.as_ref().unwrap() }}' alt='{{ project.name }}'>
+          {% endif %}
+          <h4>{{ project.name }}</h4>
+          <p>{{ project.description }}</p>
+          <span class='tech'>{{ project.tech|join(", ") }}</span>
+          {% if project.link.is_some() %}
+          <a href='{{ project.link.as_ref().unwrap() }}' target='_blank' rel='noopener'>View →</a>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
   </div>
 </div>
+
+<style>
+/* Clean, minimalistic styles */
+.search-bar {
+  margin-bottom: 2rem;
+}
+
+.search-bar input {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.project-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.project-section h3,
+.project-section-full h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.project-card {
+  padding: 1.5rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+
+.project-card:hover {
+  border-color: #ddd;
+}
+
+.project-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.project-card p {
+  margin: 0 0 0.75rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.tech {
+  display: inline-block;
+  font-size: 0.813rem;
+  color: #666;
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.project-card a {
+  color: #333;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.project-card a:hover {
+  color: #000;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.project-card-wide {
+  padding: 1.5rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.project-card-wide:hover {
+  border-color: #ddd;
+}
+
+.project-card-wide img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.project-card-wide h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.project-card-wide p {
+  margin: 0 0 0.75rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.project-section-full {
+  margin-top: 2rem;
+}
+</style>
