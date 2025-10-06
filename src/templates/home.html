@@ -110,26 +110,24 @@
 .about-section p {
   font-size: 1.125rem;
   line-height: 1.7;
-  color: #333;
+  color: var(--text-light);
   margin: 0;
 }
 
 /* Status Card */
 .status-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Spotify Section (inside status card) */
 .spotify-section {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border);
 }
 
 .spotify-content {
@@ -155,7 +153,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--text-muted);
   font-weight: 500;
   margin-bottom: 0.25rem;
 }
@@ -163,7 +161,7 @@
 .spotify-track {
   font-size: 1rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -172,7 +170,7 @@
 
 .spotify-artist {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -181,7 +179,7 @@
 .spotify-progress {
   margin-top: 1rem;
   height: 4px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -210,20 +208,20 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .status-value {
   font-size: 1rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text);
 }
 
 .status-timestamp {
   display: block;
   font-size: 0.75rem;
-  color: #999;
+  color: var(--text-subtle);
   text-align: right;
 }
 
@@ -235,12 +233,12 @@
 .map-label {
   display: block;
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 0.75rem;
 }
 
 .location-map iframe {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
   border-radius: 8px;
   width: 100%;
   height: 300px;
@@ -255,7 +253,7 @@
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #666;
+  color: var(--text-muted);
   margin: 0 0 1rem;
   font-weight: 500;
 }
@@ -271,11 +269,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: #333;
+  color: var(--text-light);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -283,8 +280,7 @@
 }
 
 .social-links a:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: var(--text-muted);
   transform: translateY(-1px);
 }
 
@@ -297,18 +293,18 @@
 /* Footer */
 .about-footer {
   padding-top: 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border);
 }
 
 .about-footer a {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-muted);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .about-footer a:hover {
-  color: #111;
+  color: var(--text);
 }
 
 /* Responsive */

@@ -77,6 +77,7 @@ const CONTRIBUTED_REPOS: &[&str] = &[
     "UW-ASIC/TinyTapeout_Flows",
     "UW-ASIC/UWASIC-ALG",
     "UW-ASIC/AnalogLibrary",
+    "SaqAsh/RetroStream",
 ];
 
 /// Fetch projects from GitHub API and parse INFO.md for metadata

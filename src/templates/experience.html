@@ -45,14 +45,14 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .resume-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text);
 }
 
 .download-btn {
@@ -61,17 +61,17 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  color: #333;
+  color: var(--text-light);
   text-decoration: none;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border);
   border-radius: 6px;
   transition: all 0.2s;
   font-weight: 500;
 }
 
 .download-btn:hover {
-  border-color: #333;
-  background: #fafafa;
+  border-color: var(--text-muted);
+  background: var(--border);
 }
 
 .download-btn svg {
@@ -95,7 +95,7 @@
 }
 
 .exp-item:hover {
-  background: #fafafa;
+  background: var(--border);
 }
 
 .exp-logo {
@@ -103,7 +103,7 @@
   height: 48px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border);
 }
 
 .exp-content {
@@ -122,29 +122,29 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text);
 }
 
 .exp-header time {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .exp-company {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .exp-company a {
-  color: #666;
+  color: var(--text-muted);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .exp-company a:hover {
-  color: #111;
+  color: var(--text);
 }
 
 @media (max-width: 640px) {
