@@ -3,7 +3,7 @@
     <h2>Experience</h2>
     <a href='/resume.pdf' download class='download-btn'>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
       </svg>
       Resume
     </a>
@@ -34,139 +34,191 @@
 </div>
 
 <style>
-.resume-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
+  .resume-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+  }
 
-.resume-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.resume-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.download-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: var(--text-light);
-  text-decoration: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.download-btn:hover {
-  border-color: var(--text-muted);
-  background: var(--border);
-}
-
-.download-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.experience-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.exp-item {
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.exp-item:hover {
-  background: var(--border);
-}
-
-.exp-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid var(--border);
-}
-
-.exp-content {
-  min-width: 0;
-}
-
-.exp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.exp-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.exp-header time {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.exp-company {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.exp-company a {
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.exp-company a:hover {
-  color: var(--text);
-}
-
-@media (max-width: 640px) {
   .resume-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .resume-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .download-btn:hover {
+    border-color: var(--text-muted);
+    background: var(--border);
+  }
+
+  .download-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .experience-list {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    gap: 2rem;
   }
 
   .exp-item {
-    grid-template-columns: 40px 1fr;
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .exp-item:hover {
+    background: var(--border);
   }
 
   .exp-logo {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+  }
+
+  .exp-logo::before {
+    content: attr(data-company);
+    font-size: 0.875rem;
+    max-width: 2ch;
+    overflow: hidden;
+  }
+
+  /* Generate different colors for each company */
+  .exp-item:nth-child(1) .exp-logo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .exp-item:nth-child(2) .exp-logo {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  .exp-item:nth-child(3) .exp-logo {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  .exp-item:nth-child(4) .exp-logo {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+
+  .exp-item:nth-child(5) .exp-logo {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+
+  .exp-item:nth-child(6) .exp-logo {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  }
+
+  .exp-item:nth-child(7) .exp-logo {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+  }
+
+  .exp-item:nth-child(8) .exp-logo {
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  }
+
+  .exp-content {
+    min-width: 0;
   }
 
   .exp-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
   }
-}
+
+  .exp-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .exp-header time {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .exp-company {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .exp-company a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .exp-company a:hover {
+    color: var(--text);
+  }
+
+  @media (max-width: 640px) {
+    .resume-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .exp-item {
+      grid-template-columns: 40px 1fr;
+    }
+
+    .exp-logo {
+      width: 40px;
+      height: 40px;
+      font-size: 0.75rem;
+    }
+
+    .exp-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
 </style>

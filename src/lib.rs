@@ -34,7 +34,7 @@ async fn serve_resume() -> impl IntoResponse {
             ("Content-Type", "application/pdf"),
             (
                 "Content-Disposition",
-                "inline; filename=\"Omar_El-Sawy_Resume.pdf\"",
+                "attachment; filename=\"Omar_El-Sawy_Resume.pdf\"",
             ),
         ],
         RESUME_PDF,
@@ -77,6 +77,21 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .route("/resume.pdf", get(serve_resume))
         .route("/api/status", post(handlers::update_status))
         .route("/api/status-card", get(handlers::status_card))
+        // Image routes
+        .route("/images/MVMBlock.png", get(handlers::serve_mvmblock))
+        .route("/images/VMMCore.jpg", get(handlers::serve_vmmcore))
+        .route("/images/optimizer_flow.png", get(handlers::serve_optimizer_flow))
+        .route("/images/riscvcpu.png", get(handlers::serve_riscvcpu))
+        .route("/images/multiplier_workflow.png", get(handlers::serve_multiplier_workflow))
+        .route("/images/fpaccum.png", get(handlers::serve_fpaccum))
+        .route("/images/compos_arch.png", get(handlers::serve_compos_arch))
+        .route("/images/CileExplorer.png", get(handlers::serve_cileexplorer))
+        // Company logos
+        .route("/images/logos/uwasic-logo.png", get(handlers::serve_uwasic_logo))
+        .route("/images/logos/amd-logo-png-transparent.png", get(handlers::serve_amd_logo))
+        .route("/images/logos/untether_ai_logo.jpg", get(handlers::serve_untether_logo))
+        .route("/images/logos/waterloo_aerial_robotics_group_logo.jpg", get(handlers::serve_warg_logo))
+        .route("/images/logos/MemsVision.jpg", get(handlers::serve_mems_logo))
         .fallback(get(not_found))
         .with_state(state);
 

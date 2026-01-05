@@ -33,6 +33,20 @@ impl ProjectsPage {
     pub fn render_results(&self) -> String {
         let mut result = String::new();
 
+        // Hardware + Software section (full width) - Render FIRST to match template
+        if !self.both.is_empty() {
+            result.push_str(&format!(
+                r#"
+<section class='project-section-full'>
+  <h3>Hardware + Software</h3>
+  <div class='projects-grid'>
+    {}
+  </div>
+</section>"#,
+                self.render_project_cards(&self.both, true)
+            ));
+        }
+
         // Hardware and Software sections (side-by-side)
         if !self.hardware.is_empty() || !self.software.is_empty() {
             result.push_str("<div class='project-split'>");
@@ -62,20 +76,6 @@ impl ProjectsPage {
             result.push_str("</div>");
         }
 
-        // Hardware + Software section (full width)
-        if !self.both.is_empty() {
-            result.push_str(&format!(
-                r#"
-<section class='project-section-full'>
-  <h3>Hardware + Software</h3>
-  <div class='projects-grid'>
-    {}
-  </div>
-</section>"#,
-                self.render_project_cards(&self.both, true)
-            ));
-        }
-
         result
     }
 
@@ -89,18 +89,28 @@ impl ProjectsPage {
                     "project-card"
                 };
 
-                let image = p
-                    .image
-                    .as_ref()
-                    .map(|img| format!(r#"<img src='{}' alt='{}'>"#, img, p.name))
-                    .unwrap_or_default();
+                let image_html = if !p.images.is_empty() {
+                    let multi_class = if p.images.len() > 1 { "multi" } else { "single" };
+                    let imgs = p.images.iter()
+                        .map(|img| format!(r#"<img src='{}' alt='{}' loading='lazy' onclick='expandImage(this)'>"#, img, p.name))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    format!(r#"<div class='project-image {}'>{}</div>"#, multi_class, imgs)
+                } else {
+                    String::new()
+                };
+
+                let tech_tags = p.tech.iter()
+                    .map(|t| format!(r#"<span class='tech'>{}</span>"#, t))
+                    .collect::<Vec<_>>()
+                    .join("\n");
 
                 let link = p
                     .link
                     .as_ref()
                     .map(|url| {
                         format!(
-                            r#"<a href='{}' target='_blank' rel='noopener'>View →</a>"#,
+                            r#"<a href='{}' target='_blank' rel='noopener' class='project-link'>View Project →</a>"#,
                             url
                         )
                     })
@@ -109,16 +119,20 @@ impl ProjectsPage {
                 format!(
                     r#"<article class='{}'>
   {}
-  <h4>{}</h4>
-  <p>{}</p>
-  <span class='tech'>{}</span>
-  {}
+  <div class='project-content'>
+    <h4>{}</h4>
+    <p>{}</p>
+    <div class='tech-tags'>
+      {}
+    </div>
+    {}
+  </div>
 </article>"#,
                     card_class,
-                    image,
+                    image_html,
                     p.name,
                     p.description,
-                    p.tech.join(", "),
+                    tech_tags,
                     link
                 )
             })
