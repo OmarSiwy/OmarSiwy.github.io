@@ -169,6 +169,6 @@ Simulated with `.zettel/sim.sh` against a behavioural reference that squares, tr
 
 ## References
 
-- de Dinechin & Kumm, *Application-Specific Arithmetic*, §1.4.2 "Operator Fusion" and Fig. 1.5, pp. 10-12 — the architecture, the five-rounding and $\log_2 5$ accuracy count, the $g=4$ claim, and the FPGA measurements [DP11].
+- de Dinechin & Kumm, *Application-Specific Arithmetic*, §1.4.2 "Operator Fusion" and Fig. 1.5, pp. 12-12 — the architecture, the five-rounding and $\log_2 5$ accuracy count, the $g=4$ claim, and the FPGA measurements [DP11].
 - §15.4 "Floating-Point Addition of Positive Terms", p. 468 — the $\approx 1/3$ saving from deleting the close path, and the pointer to fused sum-of-squares architectures [DKP09; MS13].
 - §15.6 "Fused Multiply and Add, Other Sums of Products", pp. 469-470 — the design rule limiting cheap faithful fusion to same-sign terms, and the survey of fused sums of products [SS08; Tao+12; Tao+13].

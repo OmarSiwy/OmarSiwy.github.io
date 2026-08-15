@@ -2,7 +2,7 @@
 title: Sequential Constant Divider
 description: "One table plus a remainder register clocked m = ceil(w/k) times; table area constant in w, one operand in flight, remainder free because it is the state."
 kind: circuit
-source: "ASA §13.2.3, Fig. 13.2, pp. 430-434"
+source: "ASA §13.2.3, Fig. 13.2, pp. 432-434"
 status: seed
 spade: simulated
 tags: [digital, division, constant-divisor, lut, sequential, fpga]

@@ -157,6 +157,6 @@ de Dinechin & Kumm, *Application-Specific Arithmetic*, Springer 2024:
 
 - §14.2.4 *Truncated Squarers* — Fig. 14.3, the one-extra-column rule, pp. 446–447
 - §14.2.1 *Basics* — eq. (14.1) and the exact 12-bit heap of Fig. 14.2, pp. 444–445
-- §7.2.4 *Truncating a Bit Heap for Last-Bit Accuracy* — $\Delta$, $\Delta^{\mathrm{minor}}$, $C$, inequality (7.24), Listing 7.1, Fig. 7.17, pp. 167–175
+- §7.2.4 *Truncating a Bit Heap for Last-Bit Accuracy* — $\Delta$, $\Delta^{\mathrm{minor}}$, $C$, inequality (7.24), Listing 7.1, Fig. 7.17, pp. 171–175
 - Table 8.3 heap accounting for the $12\times12$ multiplier comparison, p. 229
 - [Gar+10] Garofalo, Petra & Napoli, *A novel truncated squarer with linear compensation function*, ISCAS 2010

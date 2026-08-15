@@ -174,7 +174,7 @@ entity nr_step<#uint W>(
 
 de Dinechin & Kumm, *Application-Specific Arithmetic*, Springer 2024, Chapter 9, "Fixed-Point Division".
 
-- §9.2.1 restoring division, (9.11)–(9.13), Fig. 9.4 (one-step hardware), pp. 264–269; **non-restoring, footnote 2, p. 267** — the ASIC/FPGA verdict and the extra correction iteration.
+- §9.2.1 restoring division, (9.11)–(9.13), Fig. 9.4 (one-step hardware), pp. 269–269; **non-restoring, footnote 2, p. 267** — the ASIC/FPGA verdict and the extra correction iteration.
 - §9.2.2 radix-$\beta$ formalization and the invariant $0 \le R_i < D$, (9.15)–(9.25), pp. 269–271.
 - §9.2.3 normalized-significand alignment $R_1 = X/2$, (9.26), p. 271.
 - §9.2.4 redundant digit sets, redundancy factor (9.27)–(9.30), pp. 272–274.

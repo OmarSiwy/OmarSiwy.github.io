@@ -191,6 +191,6 @@ de Dinechin & Kumm, *Application-Specific Arithmetic*, Springer 2024, Chapter 7.
 
 - §7.3.1.1 Dadda's algorithm, pp. 176–177 — Eq. (7.25), Table 7.1, the three-step rule and the $8\times8$ worked example.
 - Fig. 7.19, p. 178 — Dadda compressor tree for the $8\times8$ heap; source of the diagram above.
-- §7.3.1.2 Reduced Area algorithm and Fig. 7.20, pp. 177–179 — the ASAP comparison point.
+- §7.3.1.2 Reduced Area algorithm and Fig. 7.20, pp. 179–179 — the ASAP comparison point.
 - Table 7.2, p. 180 — final-adder lengths 14 (Dadda) and 10 (RA); its FA, HA and FF columns are corrupt, see the warning above.
 - §7.3.2, Table 7.3, p. 184 — compressor efficiencies that invert the objective on FPGA.

@@ -161,4 +161,4 @@ de Dinechin & Kumm, *Application-Specific Arithmetic*, Springer 2024, Ch. 9 "Fix
 - §9.3.3 "Reciprocal Using Newton-Raphson Iteration", (9.52)–(9.62), Fig. 9.16, pp. 291–294.
 - §9.3 reciprocal-based division and the $\ell_Q/\ell_R$ error budget, (9.46)–(9.51), Fig. 9.15, pp. 288–290.
 - §9.3.2 generic approximation and the Pasca [Pas12] comparison, p. 291.
-- §9.4 quadratic series expansion, the parallel-step contrast, Fig. 9.17, pp. 294–297.
+- §9.4 quadratic series expansion, the parallel-step contrast, Fig. 9.17, pp. 296–297.

@@ -69,7 +69,7 @@ The final adder of a compressor tree cut into segments whose adder architecture 
 \end{document}
 ```
 
-*Own construction; the arrival profile is the one described for Fig. 7.15a, p. 174, discussed p. 194.*
+*Own construction; the arrival profile is the one described for Fig. 7.15a, p. 166, discussed p. 194.*
 
 **Fix what the final adder is actually adding.** A compressor tree takes a bit heap and returns a heap of height at most two (p. 174) — two rows $R$ and $S$ of $w$ bits each, where $w$ is the width of the widest surviving column plus the carries pushed into it. The final adder computes $R+S$ on $w+1$ bits and is the last thing between the tree and the result, which is why it "typically lies on the critical path, at least for ASICs" (p. 193). Everything below is about that one $w$-bit two-operand addition; the tree itself is [[Compressor Trees]] and the heap it consumes is [[Bit Heaps]].
 
@@ -162,7 +162,7 @@ entity split_final_adder(r: uint<16>, s: uint<16>) -> uint<17> {
 
 - de Dinechin & Kumm, *Application-Specific Arithmetic*, §7.3 (compressor tree output is a height-2 heap feeding a final adder), p. 174.
 - §7.3.4 *Some Remarks on the Final Adder*, pp. 193-194 — the Gaussian-like arrival profile, the RCA/fast/carry-select split, truncation and pipelining as flattening effects, and the reference to [SO96] for triangular multiplier timing.
-- Fig. 7.15a, p. 174 — the bit heap whose distribution the arrival profile follows.
+- Fig. 7.15a, p. 166 — the bit heap whose distribution the arrival profile follows.
 - Fig. 7.27a, p. 195 — the rectangular dot diagram of a multi-operand addition, the flat-profile counter-case.
 - §7.3.1, pp. 176-180 — the Dadda height recurrence $m_l=\lfloor 1.5\,m_{l-1}\rfloor$ used to estimate $t_i$, and the Reduced Area comparison (10-bit against 14-bit final adder on the $8\times8$ example).
 - Table 7.3, p. 184 — LUT costs and delays showing $\tau_{CC}\ll\tau_L$ on FPGA.
