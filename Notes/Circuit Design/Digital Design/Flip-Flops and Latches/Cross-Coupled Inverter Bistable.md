@@ -168,7 +168,7 @@ release dut.\v2 ; #10 check(q, 2'b01, "holds the other state");
 - [[SR Latch]] – extends: the cheapest write port, made by promoting each inverter to a NOR and handing the spare input outside.
 - [[Transparent D Latch]] – extends: cuts the feedback path instead of overpowering it, at the cost of a transparency window.
 - [[Master-Slave D Flip-Flop]] – extends: two of these loops on opposite clock phases, so no path is ever open end to end.
-- [[Regenerative Latch Comparator]] – counter-example: uses the *instability* as the operating principle, deliberately starting the loop near $V_M$ so that $e^{t/\tau}$ amplifies a millivolt input difference.
+- [[19c Positive Feedback With Unity Loop Gain Sustains a Growing Exponential|the regenerative latch comparator]] – counter-example: uses the *instability* as the operating principle, deliberately starting the loop near $V_M$ so that $e^{t/\tau}$ amplifies a millivolt input difference.
 - [[Synchronizer Chain]] – supports: the design response to the unstable point, buying resolution time because the exponent is the only term that pays.
 - [[Choosing a Storage Element]] – compares: where this sits against every sibling in the folder.
 - [[FPGAs]] – compares: the fabric forbids the loop in LUTs and sells it back as hard flops and SRAM bitcells.

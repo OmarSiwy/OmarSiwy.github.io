@@ -36,7 +36,8 @@ const dead = {}
 let total = 0
 for (const f of scoped) {
   const src = readFileSync(f, 'utf8')
-  for (const m of src.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)) {
+  for (const m of src.matchAll(/\[\[([^\]|#]+?)\\?(?:[#|][^\]]*)?\]\]/g)) {
+    // a trailing \\ is an escaped pipe inside a markdown table: [[Name\\|alias]]
     const t = m[1].trim()
     total++
     if (!resolvable.has(t)) (dead[t] ||= []).push(basename(f, '.md'))

@@ -96,7 +96,7 @@ Applications, following the structure of de Dinechin & Kumm, *Application-Specif
 - 4.1 [[Fixed-Point Function Approximation]] # domain, range, monotonicity
 - 4.2 [[Table-Based Function Evaluation]]
   - 4.2.1 [[Multipartite Methods]]
-  - 4.2.2 [[Table-and-Addition Methods]]
+  - 4.2.2 [[ATA, Addition-Table-Addition]]
 - 4.3 [[Polynomial Approximation]]
   - 4.3.1 [[Remez Minimax]]
   - 4.3.2 [[Range Reduction]]

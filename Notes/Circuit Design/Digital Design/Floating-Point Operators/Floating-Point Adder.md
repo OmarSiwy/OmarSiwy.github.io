@@ -101,8 +101,7 @@ is *computing just right* applied to a subtraction: sizing the adder from the
 rounding position backwards rather than from the operand width forwards.
 
 **Swap on the whole number and the absolute value disappears.** After the
-exception table and a swap ensuring $E_X\ge E_Y$ ([[Exponent Difference and Swap
-Unit]]), the effective operation is an addition when the signs agree and a
+exception table and a swap ensuring $E_X\ge E_Y$ ([[Exponent Difference and Swap Unit]]), the effective operation is an addition when the signs agree and a
 subtraction when they differ — so subtraction is free, $X-Y=X+(-Y)$ holds for
 every value but NaN, and the operator costs **one XOR** on $s_Y$ more than an
 adder (p. 331). When $d=0$ the difference can go negative, which in general
