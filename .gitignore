@@ -6,14 +6,22 @@ Cargo.lock
 node_modules
 package-lock.json
 bun.lockb
+.astro/
 
 # Cloudflare Workers
 .wrangler
-build/
+/build/*
+!/build/cloudflare/
+!/build/cloudflare/**
+/build/cloudflare/.wrangler/
+!/build/gds/
+!/build/gds/**
+!/build/markdown/
+!/build/markdown/**
 dist/
 
 # Development
-.cargo
+.cache/
 .env
 .env.local
 
@@ -41,4 +49,31 @@ result-*
 *.synctex.gz
 
 # Public assets (generated at build time)
-public/
+/public/
+/site/public/resume.pdf
+/site/public/gds/sar-adc.gds
+/site/public/gds/sar-adc-layout.json
+/site/public/gds/sar-adc-poster.svg
+/site/public/assets/diagrams/
+
+# Analog Compute reference PDFs — local reading copies, too large for a Pages repo
+/Notes/Circuit Design/Analog Design/Analog Compute/references/
+
+# All PDFs (textbooks, papers, exam solutions) — read locally, never committed
+*.pdf
+
+# Obsidian vault — machine-local state; plugins/themes are 22M of vendored code
+/Notes/.obsidian/plugins/
+/Notes/.obsidian/themes/
+/Notes/.obsidian/workspace.json
+/Notes/.obsidian/workspace-mobile.json
+.trash/
+
+# Claudian plugin session logs
+/Notes/.claudian/
+
+# Vite build output inside the Analog Compute project docs
+/Notes/Circuit Design/Analog Design/Analog Compute/Proj/docs/assets/
+
+# Claude Code config — never tracked
+.claude/
