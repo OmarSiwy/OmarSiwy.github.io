@@ -2,9 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
+import { slug as headingSlug } from 'github-slugger';
 import { visit } from 'unist-util-visit';
 
-const wikiLinkPattern = /\[\[([^\]|#]+?)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
+const wikiLinkPattern = /\[\[([^\]|#]*?)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
 
 function slugify(value) {
 	return value
@@ -209,9 +210,16 @@ export default function remarkWikiLinks({ notesDirectory }) {
 				const target = match[1].trim();
 				const heading = match[2]?.trim();
 				const label = match[3]?.trim() || (heading ? `${target} — ${heading}` : target);
+				// Match rehype-slug's ids; Obsidian drops `:` etc. from the link, the slugger drops them too.
+				const hash = heading ? `#${headingSlug(heading)}` : '';
+				if (!target) {
+					if (!heading) continue;
+					replacements.push({ type: 'link', url: hash, children: [{ type: 'text', value: match[3]?.trim() || heading }] });
+					cursor = match.index + match[0].length;
+					continue;
+				}
 				const resolvedSlug = noteIndex.byKey.get(target.toLowerCase()) ?? noteIndex.byKey.get(lookupKey(target));
 				const slug = resolvedSlug ?? slugify(target);
-				const hash = heading ? `#${slugify(heading)}` : '';
 
 				replacements.push({
 					type: 'link',

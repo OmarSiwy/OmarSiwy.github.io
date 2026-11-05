@@ -570,7 +570,7 @@ $$
 ```
 
 > [!tip] Remark
-> What an IR drop does to a matched pair or a mirror (a $\Delta V$ on a source line acts like a $\Delta V_{TH}$, scaled by $g_m/I_D$) is owned by [[Device Matching#Wiring Resistance and Reference Distribution]]. The fix there, distributing bias as currents rather than voltages, is in [[Layout Fundamentals#Distributing bias references]].
+> What an IR drop does to a matched pair or a mirror (a $\Delta V$ on a source line acts like a $\Delta V_{TH}$, scaled by $g_m/I_D$) is owned by [[Device Matching#Wiring Resistance and Reference Distribution]]. The fix there, distributing bias as currents rather than voltages, is in [[Biasing#Distributing Bias Across the Chip]].
 
 ### Current-Density Limits (Rule Level)
 
