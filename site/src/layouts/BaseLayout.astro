@@ -17,7 +17,7 @@ const {
 	description = profile.intro,
 	pageType = 'website',
 } = Astro.props;
-const documentTitle = title === profile.name ? title : `${title} — ${profile.name}`;
+const documentTitle = title === profile.name ? title : `${title} | ${profile.name}`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
 const pathname = Astro.url.pathname;
 const isEditorialPage = pathname.startsWith('/blog') || pathname.startsWith('/notes');

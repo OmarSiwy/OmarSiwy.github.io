@@ -7,7 +7,7 @@ export async function GET(context: { site?: URL }) {
 	const posts = visibleBlogs(await getCollection('blog'));
 
 	return rss({
-		title: 'Omar El-Sawy — Blog',
+		title: 'Omar El-Sawy | Blog',
 		description: 'Writing about analog and digital hardware, EDA, and engineering systems.',
 		site: context.site ?? new URL('https://omarelsawy.com'),
 		items: posts.map((post) => ({
