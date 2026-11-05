@@ -1,0 +1,731 @@
+---
+import { experiences, profile, projects } from '../data/portfolio';
+import HeroGds from '../components/HeroGds.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const chronologicalExperiences = [...experiences].reverse();
+---
+
+<BaseLayout>
+	<main id="main-content">
+		<section class="hero page-width" aria-labelledby="hero-title">
+			<div class="hero__copy">
+				<p class="eyebrow">Analog · RTL · systems</p>
+				<h1 id="hero-title">Idea to silicon.</h1>
+				<p>{profile.intro}</p>
+				<div class="button-row">
+					<a class="button" href="#projects">Explore projects</a>
+				</div>
+			</div>
+
+			<div id="analog-design" class="hero__visual" aria-label="Auto-rotating SAR ADC GDSII layout">
+				<HeroGds />
+			</div>
+
+			<div class="hero__gds-note">
+				<span>8-bit SAR ADC</span>
+				<span>Actual GDSII · client-side parse</span>
+				<a href="/gds/sar-adc.gds" download>Download GDS ↘</a>
+			</div>
+
+			<div id="about" class="hero__about" aria-label="About and areas of focus">
+				<div class="hero__about-label">
+					<span>01 / About</span>
+					<strong>Across the stack.</strong>
+				</div>
+				<div class="hero__about-item"><span>01</span><strong>Analog IC Design</strong></div>
+				<div class="hero__about-item"><span>02</span><strong>Digital hardware</strong></div>
+				<div class="hero__about-item"><span>03</span><strong>EDA & Tooling</strong></div>
+			</div>
+		</section>
+
+		<section id="projects" class="rail-section page-width section-block" aria-labelledby="projects-title" data-rail-section data-start="start">
+			<div class="section-heading rail-heading">
+				<div>
+					<p class="eyebrow">02 / Projects →</p>
+					<h2 id="projects-title">From netlists to kernels.</h2>
+				</div>
+				<p>Open hardware, EDA, GPUs, embedded systems.</p>
+			</div>
+
+			<div class="rail-controls">
+				<button type="button" data-rail-previous aria-controls="project-rail" aria-label="Show previous projects">←</button>
+				<input data-rail-slider type="range" min="0" max="100" value="0" aria-label="Move through projects" />
+				<button type="button" data-rail-next aria-controls="project-rail" aria-label="Show next projects">→</button>
+			</div>
+
+			<div class="rail-viewport">
+				<div id="project-rail" class="content-rail project-rail" data-content-rail>
+					{
+						projects.map((project, index) => (
+							<article class:list={['project-card', { 'project-card--with-image': project.image }] }>
+								{project.image ? (
+									<img
+										class="project-card__image"
+										src={project.image.src}
+										alt={project.image.alt}
+										width={project.image.width}
+										height={project.image.height}
+										loading="lazy"
+										decoding="async"
+									/>
+								) : null}
+								<div class="project-card__topline">
+									<span>{project.category}</span>
+									<span>{project.year}</span>
+								</div>
+								<div class="project-card__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</div>
+								<div class="project-card__body">
+									<h3><a href={project.url}>{project.name}</a></h3>
+									<p>{project.description}</p>
+									<ul class="tech-list" aria-label="Technologies">
+										{project.tech.map((technology) => <li>{technology}</li>)}
+									</ul>
+								</div>
+							</article>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section id="experience" class="rail-section page-width section-block" aria-labelledby="experience-title" data-rail-section data-start="end">
+			<div class="section-heading rail-heading">
+				<div>
+					<p class="eyebrow">03 / Experience ←</p>
+					<h2 id="experience-title">Where I built.</h2>
+				</div>
+				<p>Latest at right. Earlier work left.</p>
+			</div>
+
+			<div class="rail-controls rail-controls--reverse">
+				<button type="button" data-rail-previous aria-controls="experience-rail" aria-label="Show older experience">←</button>
+				<input data-rail-slider type="range" min="0" max="100" value="100" aria-label="Move through experience" />
+				<button type="button" data-rail-next aria-controls="experience-rail" aria-label="Show newer experience">→</button>
+			</div>
+
+			<div class="rail-viewport rail-viewport--reverse">
+				<div id="experience-rail" class="content-rail experience-rail" data-content-rail>
+					{
+						chronologicalExperiences.map((experience, index) => (
+							<article class="experience-card">
+								<img
+									class:list={[
+										'experience-card__image',
+										{
+											'experience-card__image--contain': experience.image.fit === 'contain',
+											'experience-card__image--light': experience.image.background === 'light',
+										},
+									]}
+									src={experience.image.src}
+									alt={experience.image.alt}
+									width={experience.image.width}
+									height={experience.image.height}
+									loading="lazy"
+									decoding="async"
+								/>
+								<div class="experience-card__content">
+									<div class="experience-card__topline">
+										<span>{String(index + 1).padStart(2, '0')}</span>
+										<time>{experience.period}</time>
+									</div>
+									<div>
+										<h3>{experience.role}</h3>
+										<a href={experience.url}>{experience.company} ↗</a>
+										<p>{experience.details[0]}</p>
+									</div>
+								</div>
+							</article>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+	</main>
+</BaseLayout>
+
+<script>
+	function setupRail(section: HTMLElement) {
+		const rail = section.querySelector<HTMLElement>('[data-content-rail]');
+		const slider = section.querySelector<HTMLInputElement>('[data-rail-slider]');
+		const previousButton = section.querySelector<HTMLButtonElement>('[data-rail-previous]');
+		const nextButton = section.querySelector<HTMLButtonElement>('[data-rail-next]');
+		if (!rail || !slider || !previousButton || !nextButton) return;
+		const contentRail = rail;
+		const railSlider = slider;
+		const previousControl = previousButton;
+		const nextControl = nextButton;
+
+		const getMaximumScroll = () => Math.max(0, contentRail.scrollWidth - contentRail.clientWidth);
+		const getStep = () => Math.max(260, contentRail.clientWidth * 0.72);
+		const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let updateFrame = 0;
+		let railAnimationFrame = 0;
+		let targetScrollLeft = contentRail.scrollLeft;
+
+		function clampScroll(value: number) {
+			return Math.min(getMaximumScroll(), Math.max(0, value));
+		}
+
+		function animateRail() {
+			const distance = targetScrollLeft - contentRail.scrollLeft;
+			if (Math.abs(distance) < 0.35) {
+				contentRail.scrollLeft = targetScrollLeft;
+				railAnimationFrame = 0;
+				return;
+			}
+			contentRail.scrollLeft += distance * 0.11;
+			railAnimationFrame = requestAnimationFrame(animateRail);
+		}
+
+		function moveRailTo(value: number) {
+			targetScrollLeft = clampScroll(value);
+			if (prefersReducedMotion) {
+				contentRail.scrollLeft = targetScrollLeft;
+				return;
+			}
+			if (!railAnimationFrame) railAnimationFrame = requestAnimationFrame(animateRail);
+		}
+
+		function updateControls() {
+			cancelAnimationFrame(updateFrame);
+			updateFrame = requestAnimationFrame(() => {
+				const maximumScroll = getMaximumScroll();
+				const percentage = maximumScroll > 0 ? (contentRail.scrollLeft / maximumScroll) * 100 : 0;
+				railSlider.value = String(Math.round(percentage));
+				previousControl.disabled = contentRail.scrollLeft <= 1;
+				nextControl.disabled = contentRail.scrollLeft >= maximumScroll - 1;
+			});
+		}
+
+		railSlider.addEventListener('input', () => {
+			moveRailTo(getMaximumScroll() * (Number(railSlider.value) / 100));
+		});
+		previousControl.addEventListener('click', () => moveRailTo(targetScrollLeft - getStep()));
+		nextControl.addEventListener('click', () => moveRailTo(targetScrollLeft + getStep()));
+		contentRail.addEventListener('scroll', () => {
+			if (!railAnimationFrame) targetScrollLeft = contentRail.scrollLeft;
+			updateControls();
+		}, { passive: true });
+		contentRail.addEventListener('pointerdown', () => {
+			cancelAnimationFrame(railAnimationFrame);
+			railAnimationFrame = 0;
+			targetScrollLeft = contentRail.scrollLeft;
+		}, { passive: true });
+		section.addEventListener('wheel', (event) => {
+			if (event.target instanceof Element && event.target.closest('.rail-controls')) return;
+			const primaryDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+			const deltaScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE
+				? 18
+				: event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+					? contentRail.clientWidth
+					: 1;
+			const direction = section.dataset.start === 'end' ? -1 : 1;
+			const horizontalDelta = primaryDelta * deltaScale * direction * 0.28;
+			const nextTarget = clampScroll(targetScrollLeft + horizontalDelta);
+			const isStillAnimating = Math.abs(targetScrollLeft - contentRail.scrollLeft) > 1;
+			if (Math.abs(nextTarget - targetScrollLeft) < 0.1 && !isStillAnimating) return;
+			event.preventDefault();
+			moveRailTo(nextTarget);
+		}, { passive: false });
+
+		const resizeObserver = new ResizeObserver(() => {
+			if (section.dataset.start === 'end' && railSlider.value === '100') {
+				targetScrollLeft = getMaximumScroll();
+				contentRail.scrollLeft = targetScrollLeft;
+			} else {
+				targetScrollLeft = clampScroll(targetScrollLeft);
+			}
+			updateControls();
+		});
+		resizeObserver.observe(contentRail);
+
+		requestAnimationFrame(() => {
+			if (section.dataset.start === 'end') {
+				targetScrollLeft = getMaximumScroll();
+				contentRail.scrollLeft = targetScrollLeft;
+			}
+			updateControls();
+		});
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-rail-section]').forEach(setupRail);
+</script>
+
+<style>
+	.hero {
+		position: relative;
+		display: grid;
+		min-height: min(48rem, calc(100svh - 4.5rem));
+		grid-template-columns: minmax(0, 0.9fr) minmax(20rem, 1.1fr);
+		align-items: center;
+		padding: clamp(2.5rem, 6vw, 5rem) 0 8.6rem;
+		isolation: isolate;
+		overflow: clip;
+	}
+
+	.hero::after {
+		position: absolute;
+		inset: 0 32% 0 0;
+		z-index: -1;
+		background: linear-gradient(90deg, var(--bg) 48%, transparent);
+		content: '';
+		pointer-events: none;
+	}
+
+	.hero__copy {
+		position: relative;
+		z-index: 2;
+		grid-column: 1;
+	}
+
+	.hero__copy h1 {
+		max-width: 11ch;
+		margin: 0;
+		font-size: clamp(3.2rem, 7vw, 6.7rem);
+		font-weight: 540;
+		letter-spacing: -0.07em;
+		line-height: 0.9;
+	}
+
+	.hero__copy > p:not(.eyebrow) {
+		max-width: 34rem;
+		margin-block: 1.4rem;
+		color: var(--muted);
+		font-size: clamp(0.96rem, 1.8vw, 1.12rem);
+	}
+
+	.hero__visual {
+		position: absolute;
+		inset: 1.2rem -5rem 3.4rem 31%;
+		z-index: -2;
+		min-width: 0;
+		background: radial-gradient(circle at 58% 48%, var(--signal-soft), transparent 58%);
+		mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 100%);
+	}
+
+	.hero__gds-note {
+		position: absolute;
+		right: 0;
+		bottom: 6.7rem;
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.hero__gds-note span + span::before,
+	.hero__gds-note a::before {
+		margin-right: 0.8rem;
+		color: var(--line-strong);
+		content: '/';
+	}
+
+	.hero__gds-note a {
+		color: var(--signal);
+	}
+
+	.hero__about {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: grid;
+		grid-template-columns: 1.35fr repeat(3, 1fr);
+		border-top: 1px solid var(--line-strong);
+		border-bottom: 1px solid var(--line);
+		background: color-mix(in srgb, var(--bg) 84%, transparent);
+		backdrop-filter: blur(14px);
+	}
+
+	.hero__about::before {
+		position: absolute;
+		top: -1px;
+		left: 0;
+		width: clamp(4rem, 12vw, 9rem);
+		height: 1px;
+		transform: translateX(-100%);
+		background: linear-gradient(90deg, transparent, var(--signal), var(--copper), transparent);
+		content: '';
+		animation: about-trace 5s linear infinite;
+	}
+
+	.hero__about-label,
+	.hero__about-item {
+		display: flex;
+		min-height: 5.4rem;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 0.8rem 1rem;
+		border-right: 1px solid var(--line);
+	}
+
+	.hero__about-item {
+		transform: translateY(0.8rem);
+		opacity: 0;
+		animation: about-enter 650ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+	}
+
+	.hero__about-item:nth-child(2) { animation-delay: 180ms; }
+	.hero__about-item:nth-child(3) { animation-delay: 280ms; }
+	.hero__about-item:nth-child(4) { animation-delay: 380ms; }
+
+	.hero__about-item:last-child {
+		border-right: 0;
+	}
+
+	.hero__about-label span,
+	.hero__about-item span {
+		color: var(--copper);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		font-weight: 650;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.hero__about-label strong,
+	.hero__about-item strong {
+		font-size: 0.9rem;
+		font-weight: 620;
+	}
+
+	.hero__about-item {
+		transition: background 180ms ease, color 180ms ease;
+	}
+
+	.hero__about-item:hover {
+		background: var(--signal-soft);
+		color: var(--signal);
+	}
+
+	@keyframes about-enter {
+		to { transform: translateY(0); opacity: 1; }
+	}
+
+	@keyframes about-trace {
+		to { transform: translateX(calc(74rem + 100%)); }
+	}
+
+	.section-block {
+		padding-block: clamp(3.5rem, 6.5vw, 5.5rem);
+		border-top: 1px solid var(--line);
+	}
+
+	.rail-heading {
+		margin-bottom: 1.3rem;
+	}
+
+	.rail-controls {
+		display: grid;
+		grid-template-columns: 2.5rem minmax(8rem, 1fr) 2.5rem;
+		align-items: center;
+		gap: 0.8rem;
+		margin-bottom: 1rem;
+	}
+
+	.rail-controls button {
+		display: grid;
+		width: 2.5rem;
+		height: 2.5rem;
+		place-items: center;
+		border: 1px solid var(--line-strong);
+		background: var(--bg-elevated);
+		color: var(--text);
+		cursor: pointer;
+	}
+
+	.rail-controls button:hover:not(:disabled) {
+		border-color: var(--copper);
+		color: var(--copper);
+	}
+
+	.rail-controls button:disabled {
+		color: var(--faint);
+		cursor: default;
+		opacity: 0.45;
+	}
+
+	.rail-controls input {
+		width: 100%;
+		height: 1rem;
+		margin: 0;
+		accent-color: var(--copper);
+		cursor: ew-resize;
+	}
+
+	.rail-controls--reverse input {
+		accent-color: var(--signal);
+	}
+
+	.rail-viewport {
+		position: relative;
+		overflow: hidden;
+		border: 1px solid var(--line);
+	}
+
+	.rail-viewport::after {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 3.5rem;
+		background: linear-gradient(90deg, transparent, var(--bg));
+		content: '';
+		pointer-events: none;
+	}
+
+	.rail-viewport--reverse::after {
+		right: auto;
+		left: 0;
+		background: linear-gradient(90deg, var(--bg), transparent);
+	}
+
+	.content-rail {
+		display: flex;
+		gap: 1px;
+		overflow-x: scroll;
+		scroll-behavior: auto;
+		scroll-snap-type: none;
+		scrollbar-width: none;
+		background: var(--line);
+		overscroll-behavior-inline: contain;
+	}
+
+	.content-rail::-webkit-scrollbar {
+		display: none;
+	}
+
+	.project-card,
+	.experience-card {
+		position: relative;
+		flex: 0 0 clamp(18rem, 34vw, 27rem);
+		scroll-snap-align: start;
+		background: var(--bg-elevated);
+		overflow: hidden;
+	}
+
+	.project-card {
+		display: flex;
+		min-height: 21rem;
+		flex-direction: column;
+		padding: 1.25rem;
+	}
+
+	.project-card:hover,
+	.experience-card:hover {
+		background: var(--surface-hover);
+	}
+
+	.project-card__image {
+		width: calc(100% + 2.5rem);
+		height: 8.5rem;
+		margin: -1.25rem -1.25rem 1.1rem;
+		border-bottom: 1px solid var(--line);
+		object-fit: cover;
+	}
+
+	.project-card__topline,
+	.experience-card__topline {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.65rem;
+		text-transform: uppercase;
+	}
+
+	.project-card__number {
+		position: absolute;
+		top: 2.2rem;
+		right: -0.05em;
+		color: var(--surface);
+		font-size: 7.5rem;
+		font-weight: 700;
+		letter-spacing: -0.1em;
+		line-height: 1;
+		pointer-events: none;
+	}
+
+	.project-card--with-image .project-card__number {
+		top: 9rem;
+	}
+
+	.project-card__body {
+		position: relative;
+		margin-top: auto;
+	}
+
+	.project-card h3,
+	.experience-card h3 {
+		margin: 0 0 0.65rem;
+		font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+		font-weight: 590;
+		letter-spacing: -0.045em;
+		line-height: 1.05;
+	}
+
+	.project-card p,
+	.experience-card p {
+		margin: 0 0 1rem;
+		color: var(--muted);
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+
+	.tech-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.experience-card {
+		display: flex;
+		min-height: 20rem;
+		flex-basis: clamp(19rem, 32vw, 25rem);
+		flex-direction: column;
+		padding: 1.25rem;
+	}
+
+	.experience-card__image {
+		width: calc(100% + 2.5rem);
+		height: 7.6rem;
+		margin: -1.25rem -1.25rem 1rem;
+		border-bottom: 1px solid var(--line);
+		background: #11161c;
+		object-fit: cover;
+	}
+
+	.experience-card__image--contain {
+		padding: 0.9rem;
+		object-fit: contain;
+	}
+
+	.experience-card__image--light {
+		background: #f7f6f2;
+	}
+
+	.experience-card__content {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: 1.2rem;
+	}
+
+	.experience-card a {
+		display: inline-block;
+		margin-bottom: 0.7rem;
+		color: var(--signal);
+		font-family: var(--mono);
+		font-size: 0.72rem;
+	}
+
+	.experience-card p {
+		margin-bottom: 0;
+	}
+
+	@media (max-width: 900px) {
+		.hero {
+			min-height: 42rem;
+			grid-template-columns: minmax(0, 1fr) 0.4fr;
+		}
+
+		.hero__visual {
+			left: 18%;
+			opacity: 0.68;
+		}
+
+		.hero::after {
+			right: 18%;
+		}
+
+		.section-heading {
+			align-items: start;
+			flex-direction: column;
+			gap: 0.8rem;
+		}
+
+		.hero__about {
+			grid-template-columns: 1fr repeat(3, 0.9fr);
+		}
+	}
+
+	@media (max-width: 680px) {
+		.hero {
+			min-height: calc(100svh - 4.5rem);
+			grid-template-columns: 1fr;
+			align-items: end;
+			padding-bottom: 5rem;
+		}
+
+		.hero__visual {
+			inset: 0 -45% 8rem -25%;
+			opacity: 0.46;
+			mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 90%);
+		}
+
+		.hero::after {
+			inset: 20% 0 0;
+			background: linear-gradient(180deg, transparent, var(--bg) 68%);
+		}
+
+		.hero__copy h1 {
+			max-width: 12ch;
+		}
+
+		.hero__gds-note {
+			left: 0;
+			justify-content: space-between;
+		}
+
+		.hero__gds-note span:nth-child(2) {
+			display: none;
+		}
+
+		.hero__about {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.hero__about-label {
+			display: none;
+		}
+
+		.hero__about-item {
+			min-height: 4.8rem;
+			padding: 0.65rem;
+		}
+
+		.hero__about-item strong {
+			font-size: 0.72rem;
+		}
+
+		.project-card,
+		.experience-card {
+			flex-basis: min(85vw, 22rem);
+		}
+
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.content-rail {
+			scroll-behavior: auto;
+		}
+
+		.hero__about::before,
+		.hero__about-item {
+			transform: none;
+			opacity: 1;
+			animation: none;
+		}
+	}
+</style>

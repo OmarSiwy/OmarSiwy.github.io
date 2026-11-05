@@ -1,0 +1,159 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { noteTitle, noteTree, noteUrl } from '../../lib/content';
+
+const notes = await getCollection('notes');
+const tree = noteTree(notes);
+const description =
+	'I figured since I read so many books, I am bound to forget, so I created these notes to keep them here. Its not only technical, rather comprehensive of all that I read.';
+---
+
+<BaseLayout title="Notes" description={description}>
+	<main id="main-content" class="listing-page page-width">
+		<header class="listing-header notes-header">
+			<h1>Notes</h1>
+			<p>{description}</p>
+			<button class="notes-search" type="button" data-search-open>
+				<span class="notes-search__caret" aria-hidden="true">&gt;</span>
+				<span>Search {notes.length.toLocaleString()} notes by title or body text</span>
+				<kbd>/</kbd>
+			</button>
+		</header>
+		<div class="note-tree">
+			{
+				tree.map((area) => (
+					<section aria-labelledby={`area-${area.area}`}>
+						<div class="note-group__heading">
+							<h2 id={`area-${area.area}`}>{area.area}</h2>
+							<span>{area.total.toLocaleString()} notes</span>
+						</div>
+						<ul class="note-sections">
+							{area.sections.map((section) => (
+								<li>
+									{/* No per-folder landing page exists, so open the folder's first
+									    note — its sidebar lists every sibling. */}
+									<a href={noteUrl(section.notes[0]!)}>
+										<span class="note-section__name">{section.section || 'Overview'}</span>
+										<span class="note-section__count">{section.notes.length}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
+			}
+		</div>
+	</main>
+</BaseLayout>
+
+<style>
+	.notes-header {
+		position: relative;
+	}
+
+	.notes-search {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		gap: 0.7rem;
+		margin-top: 1.5rem;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius);
+		background: var(--bg-elevated);
+		color: var(--muted);
+		cursor: pointer;
+		font-family: var(--mono);
+		font-size: 0.82rem;
+		text-align: left;
+	}
+
+	.notes-search:hover {
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.notes-search__caret {
+		color: var(--copper);
+		font-weight: 700;
+	}
+
+	.notes-search kbd {
+		margin-left: auto;
+		padding: 0 0.35rem;
+		border: 1px solid var(--line);
+		color: var(--faint);
+		font-size: 0.75rem;
+	}
+
+	.note-tree {
+		display: grid;
+		gap: 3.5rem;
+	}
+
+	.note-group__heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		margin-bottom: 1rem;
+	}
+
+	.note-group__heading h2 {
+		margin: 0;
+		font-size: clamp(1.8rem, 4vw, 3rem);
+		font-weight: 580;
+		letter-spacing: -0.045em;
+	}
+
+	.note-group__heading span {
+		color: var(--signal);
+		font-family: var(--mono);
+		font-size: 0.68rem;
+		text-transform: uppercase;
+	}
+
+	.note-sections {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		gap: 0;
+		grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+		list-style: none;
+	}
+
+	.note-sections a {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.62rem 0.4rem;
+		border-top: 1px solid var(--line);
+		color: var(--muted);
+		font-family: var(--mono);
+		font-size: 0.8rem;
+		text-decoration: none;
+	}
+
+	.note-sections a:hover {
+		background: var(--signal-soft);
+		color: var(--signal);
+	}
+
+	.note-sections a::before {
+		color: var(--faint);
+		content: '▸';
+	}
+
+	.note-section__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.note-section__count {
+		margin-left: auto;
+		color: var(--faint);
+		font-variant-numeric: tabular-nums;
+	}
+</style>

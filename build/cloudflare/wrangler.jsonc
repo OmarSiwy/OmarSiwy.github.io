@@ -1,0 +1,29 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "omarsiwy-portfolio",
+	"compatibility_date": "2026-07-18",
+	"workers_dev": false,
+	"preview_urls": false,
+	"assets": {
+		"directory": "../../site/dist",
+		"html_handling": "force-trailing-slash",
+		"not_found_handling": "404-page"
+	},
+	"routes": [
+		{
+			"pattern": "omarelsawy.com",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.omarelsawy.com",
+			"custom_domain": true
+		}
+	],
+	"env": {
+		"preview": {
+			"name": "omarsiwy-portfolio-preview",
+			"workers_dev": true,
+			"preview_urls": true
+		}
+	}
+}

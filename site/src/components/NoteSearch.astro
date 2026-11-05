@@ -1,0 +1,556 @@
+---
+// Telescope-style live grep over every note and post.
+// The index is built by Pagefind after `astro build`, so this is inert in `astro dev`.
+// The preview pane injects article markup, so it needs prose styles even on pages
+// (the home page, listings) that do not otherwise load them.
+import '../styles/prose.css';
+---
+
+<div class="palette" data-search-overlay hidden>
+	<div class="palette__backdrop" data-search-dismiss></div>
+	<div class="palette__panel" role="dialog" aria-modal="true" aria-label="Search notes">
+		<div class="palette__panes">
+			<div class="palette__column palette__column--results">
+				<p class="palette__legend">Results</p>
+				<ul class="palette__results" role="listbox" aria-label="Search results" data-search-results></ul>
+				<p class="palette__empty" data-search-empty>Type to grep every note.</p>
+			</div>
+			<div class="palette__column palette__column--preview">
+				<p class="palette__legend">Preview</p>
+				<div class="palette__preview" data-search-preview></div>
+			</div>
+		</div>
+		<div class="palette__prompt">
+			<span class="palette__caret" aria-hidden="true">&gt;</span>
+			<input
+				class="palette__input"
+				type="text"
+				placeholder="Live Grep"
+				autocomplete="off"
+				autocorrect="off"
+				spellcheck="false"
+				aria-label="Search query"
+				data-search-input
+			/>
+			<span class="palette__count" data-search-count></span>
+		</div>
+	</div>
+</div>
+
+<!--
+	Global rather than scoped: the result rows are built with innerHTML at runtime,
+	so they never receive Astro's `data-astro-cid-*` attribute and scoped rules
+	would not match them. Every selector below is `palette`-namespaced.
+-->
+<style is:global>
+	::highlight(note-search) {
+		background: var(--copper-soft);
+		color: var(--copper);
+	}
+
+	.palette {
+		position: fixed;
+		inset: 0;
+		z-index: 80;
+		display: grid;
+		place-items: center;
+		padding: clamp(0.5rem, 3vw, 2.5rem);
+	}
+
+	.palette[hidden] {
+		display: none;
+	}
+
+	.palette__backdrop {
+		position: absolute;
+		inset: 0;
+		background: color-mix(in srgb, #000 55%, transparent);
+		backdrop-filter: blur(3px);
+	}
+
+	.palette__panel {
+		position: relative;
+		display: flex;
+		width: min(1100px, 100%);
+		height: min(660px, 76vh);
+		flex-direction: column;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius);
+		background: var(--bg-elevated);
+		box-shadow: var(--shadow);
+		overflow: hidden;
+	}
+
+	.palette__panes {
+		display: grid;
+		min-height: 0;
+		flex: 1;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+	}
+
+	.palette__column {
+		position: relative;
+		display: flex;
+		min-height: 0;
+		flex-direction: column;
+		padding-top: 1.6rem;
+	}
+
+	.palette__column--results {
+		border-right: 1px solid var(--line);
+	}
+
+	/* Sits inside the panel — the panel clips overflow, so it cannot straddle the edge. */
+	.palette__legend {
+		position: absolute;
+		top: 0.45rem;
+		left: 50%;
+		z-index: 1;
+		margin: 0;
+		padding: 0.1rem 0.7rem;
+		border-radius: 999px;
+		background: var(--signal);
+		color: var(--bg);
+		font-family: var(--mono);
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		transform: translateX(-50%);
+	}
+
+	.palette__results {
+		flex: 1;
+		margin: 0;
+		padding: 0.35rem 0;
+		list-style: none;
+		overflow-y: auto;
+		scrollbar-width: thin;
+	}
+
+	.palette__empty {
+		position: absolute;
+		inset: 3.5rem 1rem auto;
+		margin: 0;
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.74rem;
+		text-align: center;
+	}
+
+	.palette__results:not(:empty) + .palette__empty {
+		display: none;
+	}
+
+	.palette__row {
+		display: block;
+		padding: 0.4rem 0.9rem;
+		border-left: 2px solid transparent;
+		color: var(--muted);
+		cursor: pointer;
+		font-family: var(--mono);
+		font-size: 0.73rem;
+		line-height: 1.45;
+	}
+
+	.palette__row[aria-selected='true'] {
+		border-left-color: var(--copper);
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.palette__path {
+		display: block;
+		overflow: hidden;
+		color: var(--signal);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.palette__crumb {
+		color: var(--faint);
+	}
+
+	.palette__anchor {
+		color: var(--copper);
+	}
+
+	.palette__excerpt {
+		display: -webkit-box;
+		overflow: hidden;
+		color: var(--muted);
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.palette__excerpt mark {
+		background: none;
+		color: var(--copper);
+		font-weight: 700;
+	}
+
+	.palette__preview {
+		flex: 1;
+		padding: 0 1.4rem 1.4rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
+	}
+
+	.palette__preview h1 {
+		font-size: 1.35rem;
+	}
+
+	.palette__notice {
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.74rem;
+	}
+
+	.palette__prompt {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.7rem 1rem;
+		border-top: 1px solid var(--line-strong);
+		background: var(--surface);
+	}
+
+	.palette__caret {
+		color: var(--copper);
+		font-family: var(--mono);
+		font-weight: 700;
+	}
+
+	.palette__input {
+		flex: 1;
+		border: 0;
+		background: none;
+		color: var(--text);
+		font-family: var(--mono);
+		font-size: 0.92rem;
+	}
+
+	.palette__input:focus {
+		outline: none;
+	}
+
+	.palette__count {
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.72rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	@media (max-width: 780px) {
+		.palette__panes {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.palette__column--preview {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	interface SubResult {
+		title: string;
+		url: string;
+		excerpt: string;
+	}
+
+	interface ResultData {
+		url: string;
+		excerpt: string;
+		meta: Record<string, string>;
+		sub_results?: SubResult[];
+	}
+
+	interface Row {
+		url: string;
+		title: string;
+		crumb: string;
+		anchor: string;
+		excerpt: string;
+	}
+
+	interface Pagefind {
+		options(config: Record<string, unknown>): Promise<void>;
+		debouncedSearch(
+			query: string,
+			options?: Record<string, unknown>,
+			debounceMs?: number,
+		): Promise<{ results: { data(): Promise<ResultData> }[] } | null>;
+	}
+
+	const overlay = document.querySelector<HTMLElement>('[data-search-overlay]');
+	const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+	const list = document.querySelector<HTMLUListElement>('[data-search-results]');
+	const preview = document.querySelector<HTMLElement>('[data-search-preview]');
+	const count = document.querySelector<HTMLElement>('[data-search-count]');
+	const empty = document.querySelector<HTMLElement>('[data-search-empty]');
+
+	// ponytail: only the first 40 hits get expanded into rows. Telescope caps its
+	// list too, and each data() call is a separate index fetch.
+	const MAX_RESULTS = 40;
+	const MAX_ROWS = 120;
+
+	if (overlay && input && list && preview && count && empty) {
+		let rows: Row[] = [];
+		let selected = 0;
+		let engine: Pagefind | null = null;
+		let engineFailed = false;
+		let queryTerms: string[] = [];
+		let previewToken = 0;
+		const documentCache = new Map<string, string>();
+
+		async function loadEngine() {
+			if (engine || engineFailed) return engine;
+			try {
+				// Built by `pagefind --site dist`, so it only exists in a production build.
+				// The indirection stops Vite from trying to resolve it at build time.
+				const modulePath = '/pagefind/pagefind.js';
+				const module = (await import(/* @vite-ignore */ modulePath)) as unknown as Pagefind;
+				await module.options({ excerptLength: 30 });
+				engine = module;
+			} catch {
+				engineFailed = true;
+			}
+			return engine;
+		}
+
+		function escapeHtml(value: string) {
+			return value.replace(/[&<>"]/g, (character) =>
+				({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[character] ?? character,
+			);
+		}
+
+		function toRows(entries: ResultData[]) {
+			const collected: Row[] = [];
+			for (const entry of entries) {
+				const title = entry.meta.title ?? entry.url;
+				const crumb = entry.meta.crumb ?? '';
+				const subResults = entry.sub_results ?? [];
+				if (subResults.length === 0) {
+					collected.push({ url: entry.url, title, crumb, anchor: '', excerpt: entry.excerpt });
+					continue;
+				}
+				for (const sub of subResults) {
+					collected.push({
+						url: sub.url,
+						title,
+						crumb,
+						// Pagefind repeats the page title as the first sub-result.
+						anchor: sub.title === title ? '' : sub.title,
+						excerpt: sub.excerpt,
+					});
+					if (collected.length >= MAX_ROWS) return collected;
+				}
+			}
+			return collected;
+		}
+
+		function renderRows() {
+			list.innerHTML = rows
+				.map((row, index) => {
+					const crumb = row.crumb ? `<span class="palette__crumb">${escapeHtml(row.crumb)}/</span>` : '';
+					const anchor = row.anchor ? `<span class="palette__anchor"> › ${escapeHtml(row.anchor)}</span>` : '';
+					return `<li class="palette__row" role="option" data-index="${index}" aria-selected="${index === selected}">
+						<span class="palette__path">${crumb}${escapeHtml(row.title)}${anchor}</span>
+						<span class="palette__excerpt">${row.excerpt}</span>
+					</li>`;
+				})
+				.join('');
+		}
+
+		function highlightPreview(root: HTMLElement) {
+			const highlights = (CSS as unknown as { highlights?: Map<string, unknown> }).highlights;
+			const HighlightConstructor = (window as unknown as { Highlight?: new (...ranges: Range[]) => unknown })
+				.Highlight;
+			if (!highlights || !HighlightConstructor || queryTerms.length === 0) return null;
+
+			const ranges: Range[] = [];
+			const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+			for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+				const text = (node.nodeValue ?? '').toLowerCase();
+				for (const term of queryTerms) {
+					for (let at = text.indexOf(term); at !== -1; at = text.indexOf(term, at + term.length)) {
+						const range = document.createRange();
+						range.setStart(node, at);
+						range.setEnd(node, at + term.length);
+						ranges.push(range);
+					}
+				}
+			}
+			highlights.delete('note-search');
+			if (ranges.length === 0) return null;
+			highlights.set('note-search', new HighlightConstructor(...ranges));
+			return ranges[0] ?? null;
+		}
+
+		function scrollPreviewTo(root: HTMLElement, row: Row) {
+			const hash = row.url.split('#')[1];
+			const target = hash ? root.querySelector(`#${CSS.escape(decodeURIComponent(hash))}`) : null;
+			const firstMatch = highlightPreview(root);
+			const rect = target?.getBoundingClientRect() ?? firstMatch?.getBoundingClientRect();
+			if (!rect) return;
+			preview.scrollTop += rect.top - preview.getBoundingClientRect().top - 24;
+		}
+
+		async function renderPreview() {
+			const row = rows[selected];
+			const token = ++previewToken;
+			if (!row) {
+				preview.innerHTML = '';
+				return;
+			}
+
+			const path = row.url.split('#')[0] ?? row.url;
+			let html = documentCache.get(path);
+			if (html === undefined) {
+				preview.innerHTML = '<p class="palette__notice">Loading…</p>';
+				try {
+					const response = await fetch(path);
+					const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+					const body = parsed.querySelector('[data-pagefind-body]');
+					// Drop the chrome that is excluded from the index too (eyebrow,
+					// metadata, table of contents, backlinks) so the preview is just prose.
+					for (const chrome of body?.querySelectorAll('[data-pagefind-ignore]') ?? []) chrome.remove();
+					html = body?.innerHTML ?? '';
+				} catch {
+					html = '';
+				}
+				documentCache.set(path, html);
+			}
+			if (token !== previewToken) return;
+
+			preview.innerHTML = html || '<p class="palette__notice">Preview unavailable.</p>';
+			preview.scrollTop = 0;
+			scrollPreviewTo(preview, row);
+		}
+
+		function updateCount(noteCount: number | null = null) {
+			if (rows.length === 0) {
+				count.textContent = '';
+				return;
+			}
+			if (noteCount !== null) count.dataset.notes = String(noteCount);
+			const notes = count.dataset.notes ?? '0';
+			count.textContent = `${selected + 1} / ${rows.length}  ·  ${notes} notes`;
+		}
+
+		function select(index: number, scrollIntoView = true) {
+			if (rows.length === 0) return;
+			selected = (index + rows.length) % rows.length;
+			updateCount();
+			for (const element of list.querySelectorAll<HTMLElement>('.palette__row')) {
+				element.setAttribute('aria-selected', String(Number(element.dataset.index) === selected));
+			}
+			if (scrollIntoView) {
+				list.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+			}
+			void renderPreview();
+		}
+
+		async function runSearch(query: string) {
+			queryTerms = query.toLowerCase().split(/\s+/).filter((term) => term.length > 1);
+
+			if (query.trim().length === 0) {
+				rows = [];
+				renderRows();
+				preview.innerHTML = '';
+				count.textContent = '';
+				empty.textContent = 'Type to grep every note.';
+				return;
+			}
+
+			const searchEngine = await loadEngine();
+			if (!searchEngine) {
+				empty.textContent = 'Search index missing — run `bun run build` (Pagefind indexes the built site).';
+				count.textContent = '';
+				return;
+			}
+
+			const response = await searchEngine.debouncedSearch(query, {}, 120);
+			// Pagefind returns null when a newer keystroke superseded this search.
+			if (response === null) return;
+
+			const entries = await Promise.all(response.results.slice(0, MAX_RESULTS).map((result) => result.data()));
+			rows = toRows(entries);
+			selected = 0;
+			renderRows();
+			updateCount(response.results.length);
+			empty.textContent = 'No matches.';
+			void renderPreview();
+		}
+
+		function open() {
+			if (!overlay.hidden) return;
+			overlay.hidden = false;
+			document.body.style.overflow = 'hidden';
+			input.focus();
+			input.select();
+			void loadEngine();
+		}
+
+		function close() {
+			overlay.hidden = true;
+			document.body.style.overflow = '';
+			(CSS as unknown as { highlights?: Map<string, unknown> }).highlights?.delete('note-search');
+		}
+
+		input.addEventListener('input', () => void runSearch(input.value));
+
+		input.addEventListener('keydown', (event) => {
+			const isNext = event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'n');
+			const isPrevious = event.key === 'ArrowUp' || (event.ctrlKey && event.key === 'p');
+			if (isNext) {
+				event.preventDefault();
+				select(selected + 1);
+			} else if (isPrevious) {
+				event.preventDefault();
+				select(selected - 1);
+			} else if (event.key === 'Enter') {
+				event.preventDefault();
+				const row = rows[selected];
+				if (row) window.location.href = row.url;
+			}
+		});
+
+		list.addEventListener('mousemove', (event) => {
+			const row = (event.target as HTMLElement).closest<HTMLElement>('.palette__row');
+			if (row && Number(row.dataset.index) !== selected) select(Number(row.dataset.index), false);
+		});
+
+		list.addEventListener('click', (event) => {
+			const row = (event.target as HTMLElement).closest<HTMLElement>('.palette__row');
+			const match = row && rows[Number(row.dataset.index)];
+			if (match) window.location.href = match.url;
+		});
+
+		overlay.querySelector('[data-search-dismiss]')?.addEventListener('click', close);
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && !overlay.hidden) {
+				close();
+				return;
+			}
+			if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+				event.preventDefault();
+				open();
+				return;
+			}
+			const target = event.target as HTMLElement | null;
+			const typing = target?.matches('input, textarea, select, [contenteditable]') ?? false;
+			if (event.key === '/' && !typing && overlay.hidden) {
+				event.preventDefault();
+				open();
+			}
+		});
+
+		for (const trigger of document.querySelectorAll('[data-search-open]')) {
+			trigger.addEventListener('click', open);
+		}
+	}
+</script>

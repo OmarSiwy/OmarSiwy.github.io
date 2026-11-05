@@ -1,0 +1,94 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+import { formatDate } from '../lib/content';
+import BaseLayout from './BaseLayout.astro';
+import 'katex/dist/katex.min.css';
+import '../styles/prose.css';
+
+interface Props {
+	title: string;
+	description: string;
+	eyebrow: string;
+	crumb?: string | undefined;
+	publishedAt?: Date | undefined;
+	updatedAt?: Date | undefined;
+	readingMinutes?: number | undefined;
+	status?: string | undefined;
+	tags?: string[];
+	headings?: MarkdownHeading[];
+	cover?: {
+		src: string;
+		alt: string;
+		width: number;
+		height: number;
+	} | undefined;
+}
+
+const {
+	title,
+	description,
+	eyebrow,
+	crumb,
+	publishedAt,
+	updatedAt,
+	readingMinutes,
+	status,
+	tags = [],
+	headings = [],
+	cover,
+} = Astro.props;
+const tableOfContents = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const hasSidebar = Astro.slots.has('sidebar');
+---
+
+<BaseLayout title={title} description={description} pageType="article">
+	<main id="main-content" class="content-page page-width">
+		<div class:list={['content-shell', { 'content-shell--with-sidebar': hasSidebar }]}>
+			{hasSidebar && <aside class="content-sidebar"><slot name="sidebar" /></aside>}
+			<article class="content-article" data-pagefind-body>
+			{crumb && <span hidden data-pagefind-meta="crumb">{crumb}</span>}
+			<header class="content-header">
+				<p class="eyebrow" data-pagefind-ignore>{eyebrow}</p>
+				<h1>{title}</h1>
+				<p class="content-deck">{description}</p>
+				<div class="content-meta" data-pagefind-ignore>
+					{publishedAt && <time datetime={publishedAt.toISOString()}>{formatDate(publishedAt)}</time>}
+					{readingMinutes && <span>{readingMinutes} min read</span>}
+					{status && <span class={`status status--${status}`}>{status}</span>}
+					{updatedAt && <span>Updated {formatDate(updatedAt)}</span>}
+				</div>
+				{tags.length > 0 && <ul class="tag-list" aria-label="Tags">{tags.map((tag) => <li>{tag}</li>)}</ul>}
+			</header>
+			{cover && (
+				<img
+					class="content-cover"
+					src={cover.src}
+					alt={cover.alt}
+					width={cover.width}
+					height={cover.height}
+					loading="eager"
+					fetchpriority="high"
+					decoding="async"
+				/>
+			)}
+			{
+				tableOfContents.length > 1 && (
+					<details class="table-of-contents" data-pagefind-ignore>
+						<summary>On this page</summary>
+						<ol>
+							{tableOfContents.map((heading) => (
+								<li class:list={{ nested: heading.depth === 3 }}><a href={`#${heading.slug}`}>{heading.text}</a></li>
+							))}
+						</ol>
+					</details>
+				)
+			}
+			<div class="prose">
+				<slot />
+			</div>
+			<slot name="after" />
+			</article>
+		</div>
+	</main>
+</BaseLayout>

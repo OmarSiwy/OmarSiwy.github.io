@@ -1,0 +1,118 @@
+\usepackage{circuitikz}
+\begin{document}
+\begin{circuitikz}[font=\small,>=stealth,every node/.style={font=\footnotesize}]
+
+% ======================= (a) combinatorial =======================
+\node[anchor=west,font=\small] at (-3.4,4.95)
+  {(a) combinatorial: input registers may present a new $X$ only every $\overline{\Delta t}$};
+
+\fill[black!7] (0.7,2.55) rectangle (6.45,3.65);
+% input register
+\draw[fill=black!15] (-0.1,2.5) rectangle (0.2,3.7);
+\draw (-0.1,2.5) -- (0.05,2.62) -- (0.2,2.5);
+\draw[->] (0.2,3.1) -- (0.95,3.1);
+\node[anchor=south,font=\tiny] at (0.57,3.14) {$X$, 8\,b};
+% four logic levels
+\foreach \i/\lab in {1/{$L_1$},2/{$L_2$},3/{$L_3$},4/{$L_4$}}{
+  \draw[fill=white] (1.4*\i-0.4,2.75) rectangle (1.4*\i+0.4,3.45);
+  \node at (1.4*\i,3.1) {\lab};
+}
+\foreach \i/\w in {1/9,2/10,3/10}{
+  \draw[->] (1.4*\i+0.4,3.1) -- (1.4*\i+1.0,3.1);
+  \node[anchor=south,font=\tiny] at (1.4*\i+0.7,3.14) {\w\,b};
+}
+% output register
+\draw[->] (6.0,3.1) -- (6.7,3.1);
+\node[anchor=south,font=\tiny] at (6.35,3.14) {10\,b};
+\draw[fill=black!15] (6.7,2.5) rectangle (7.0,3.7);
+\draw (6.7,2.5) -- (6.85,2.62) -- (7.0,2.5);
+\draw[->] (7.0,3.1) -- (7.5,3.1);
+\node[anchor=west,font=\tiny] at (7.55,3.1) {$Y$, 10\,b};
+% critical path arrow
+\draw[->,thick,red] (0.2,4.15) -- (6.7,4.15);
+\node[anchor=south,font=\footnotesize,red] at (3.45,4.18) {$\overline{\Delta t}$};
+
+% ---- waveform (a): cycle = 2.0 units = one Delta t ----
+\node[anchor=east] at (-0.15,2.05) {$X$};
+\foreach \i/\lab in {0/{$X_0$},1/{$X_1$},2/{$X_2$}}{
+  \draw[fill=black!4] (2*\i,1.87) rectangle (2*\i+1.94,2.23);
+  \node[font=\tiny] at (2*\i+0.97,2.05) {\lab};
+}
+\node[anchor=east] at (-0.15,1.5) {$Y$};
+\foreach \i/\lab in {1/{$Y_0$},2/{$Y_1$}}{
+  \draw[fill=black!4] (2*\i,1.32) rectangle (2*\i+1.94,1.68);
+  \node[font=\tiny] at (2*\i+0.97,1.5) {\lab};
+}
+\node[anchor=east] at (-0.15,0.85) {clk};
+\draw (0,0.7) -- (0,1.1) -- (1,1.1) -- (1,0.7) -- (2,0.7) -- (2,1.1) -- (3,1.1)
+   -- (3,0.7) -- (4,0.7) -- (4,1.1) -- (5,1.1) -- (5,0.7) -- (6,0.7) -- (6,1.1)
+   -- (7,1.1) -- (7,0.7) -- (7.4,0.7);
+\draw[|<->|] (0,0.35) -- node[fill=white,font=\tiny] {$\overline{\Delta t}$} (2,0.35);
+
+% ======================= (b) pipelined =======================
+\node[anchor=west,font=\small] at (-3.4,-0.25)
+  {(b) the same DAG cut into $N=4$ stages: a new $X$ every $\overline{\Delta t}/N$, so $f$ is multiplied by 4};
+
+\fill[black!7] (0.7,-2.45) rectangle (6.45,-1.35);
+\draw[fill=black!15] (-0.1,-2.5) rectangle (0.2,-1.3);
+\draw (-0.1,-2.5) -- (0.05,-2.38) -- (0.2,-2.5);
+\draw[->] (0.2,-1.9) -- (0.95,-1.9);
+\node[anchor=south,font=\tiny] at (0.57,-1.86) {$X$, 8\,b};
+\foreach \i/\lab in {1/{$L_1$},2/{$L_2$},3/{$L_3$},4/{$L_4$}}{
+  \draw[fill=white] (1.4*\i-0.4,-2.25) rectangle (1.4*\i+0.4,-1.55);
+  \node at (1.4*\i,-1.9) {\lab};
+}
+% three pipeline registers A, B, C between the levels
+\foreach \i/\lab/\w in {1/{$A$}/9,2/{$B$}/10,3/{$C$}/10}{
+  \draw[->] (1.4*\i+0.4,-1.9) -- (1.4*\i+0.62,-1.9);
+  \draw[fill=black!25] (1.4*\i+0.63,-2.30) rectangle (1.4*\i+0.87,-1.50);
+  \draw (1.4*\i+0.63,-2.30) -- (1.4*\i+0.75,-2.22) -- (1.4*\i+0.87,-2.30);
+  \draw[->] (1.4*\i+0.87,-1.9) -- (1.4*\i+1.0,-1.9);
+  \node[anchor=south,font=\tiny] at (1.4*\i+0.75,-1.46) {\lab, \w\,b};
+}
+\draw[->] (6.0,-1.9) -- (6.7,-1.9);
+\node[anchor=south,font=\tiny] at (6.35,-1.86) {10\,b};
+\draw[fill=black!15] (6.7,-2.5) rectangle (7.0,-1.3);
+\draw (6.7,-2.5) -- (6.85,-2.38) -- (7.0,-2.5);
+\draw[->] (7.0,-1.9) -- (7.5,-1.9);
+\node[anchor=west,font=\tiny] at (7.55,-1.9) {$Y$, 10\,b};
+\draw[->,thick,red] (1.4,-1.12) -- (2.87,-1.12);
+\node[anchor=south,font=\footnotesize,red] at (2.13,-1.09) {$\overline{\Delta t}/N$};
+
+% ---- waveform (b): cycle = 0.5 units, twelve of them in the same span ----
+\node[anchor=east] at (-0.15,-3.1) {$X$};
+\foreach \i in {0,...,11}{
+  \draw[fill=black!4] (0.5*\i,-3.26) rectangle (0.5*\i+0.46,-2.94);
+  \node[font=\tiny] at (0.5*\i+0.23,-3.1) {\i};
+}
+\foreach \r/\y/\off in {{$A$}/-3.62/1,{$B$}/-4.06/2,{$C$}/-4.50/3}{
+  \node[anchor=east] at (-0.15,\y) {\r};
+  \foreach \i in {0,...,11}{
+    \pgfmathsetmacro{\x}{0.5*\i+0.5*\off}
+    \ifdim \x pt < 6.01pt
+      \draw[fill=black!4] (\x,\y-0.16) rectangle (\x+0.46,\y+0.16);
+      \node[font=\tiny] at (\x+0.23,\y) {\i};
+    \fi
+  }
+}
+\node[anchor=east] at (-0.15,-4.94) {$Y$};
+\foreach \i in {0,...,7}{
+  \draw[fill=black!4] (0.5*\i+2.0,-5.10) rectangle (0.5*\i+2.46,-4.78);
+  \node[font=\tiny] at (0.5*\i+2.23,-4.94) {\i};
+}
+\node[anchor=east] at (-0.15,-5.55) {clk};
+\draw (0,-5.7) -- (0,-5.7);
+\foreach \i in {0,...,11}{
+  \draw (0.5*\i,-5.7) -- (0.5*\i,-5.35) -- (0.5*\i+0.25,-5.35)
+     -- (0.5*\i+0.25,-5.7) -- (0.5*\i+0.5,-5.7);
+}
+\draw (6,-5.7) -- (7.4,-5.7);
+\draw[|<->|] (0,-6.05) -- node[fill=white,font=\tiny] {$\overline{\Delta t}/N$} (0.5,-6.05);
+% one instant, four results in flight
+\draw[dashed,red,thin] (4.48,-2.85) -- (4.25,-5.75);
+\node[anchor=west,font=\tiny,red,align=left] at (4.60,-5.98)
+  {at any instant $N=4$ results are in flight};
+\node[anchor=west,font=\tiny] at (-3.4,-6.55)
+  {no input or output registers are added by the tool -- only the $N-1=3$ intermediate ones; the function and the rounding are unchanged};
+\end{circuitikz}
+\end{document}

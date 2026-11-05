@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { blogUrl, formatDate, readingTime, visibleBlogs } from '../../lib/content';
+
+const posts = visibleBlogs(await getCollection('blog'));
+---
+
+<BaseLayout title="Blog" description="Writing about analog and digital hardware, EDA, and engineering systems.">
+	<main id="main-content" class="listing-page blog-page page-width">
+		<header class="listing-header">
+			<p class="eyebrow">Long-form writing</p>
+			<h1>Blog</h1>
+			<p>Ideas about faster hardware tools, practical silicon design, and the systems around them.</p>
+		</header>
+		{
+			posts.length > 0 ? (
+				<div class="listing-grid">
+					{posts.map((post) => (
+						<a class:list={['listing-card', { 'listing-card--with-image': post.data.cover }]} href={blogUrl(post)}>
+							{post.data.cover ? (
+								<img
+									class="listing-card__image"
+									src={post.data.cover.src}
+									alt={post.data.cover.alt}
+									width={post.data.cover.width}
+									height={post.data.cover.height}
+									loading="lazy"
+									decoding="async"
+								/>
+							) : null}
+							<div class="listing-card__meta">
+								<time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time>
+								<span>{readingTime(post.body)} min</span>
+							</div>
+							<h2>{post.data.title}</h2>
+							<p>{post.data.description}</p>
+							{post.data.draft && <span class="draft-label">Draft preview</span>}
+						</a>
+					))}
+				</div>
+			) : (
+				<p class="empty-state">The first article is still on the bench.</p>
+			)
+		}
+	</main>
+</BaseLayout>
+
+<style>
+	.blog-page {
+		position: relative;
+	}
+
+	.blog-page .listing-header {
+		border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+	}
+
+	.blog-page .listing-grid {
+		margin-top: 1.25rem;
+	}
+
+	.draft-label {
+		margin-top: 1rem;
+		color: var(--copper);
+		font-family: var(--mono);
+		font-size: 0.68rem;
+		text-transform: uppercase;
+	}
+</style>

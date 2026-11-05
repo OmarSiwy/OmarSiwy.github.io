@@ -1,0 +1,207 @@
+<figure class="gds-preview">
+	<div class="gds-preview__bar">
+		<span>TOP / MVM_CORE</span>
+		<span>130 nm · 6 layers</span>
+	</div>
+	<svg viewBox="0 0 720 520" role="img" aria-labelledby="gds-title gds-description">
+		<title id="gds-title">Stylized analog integrated-circuit layout</title>
+		<desc id="gds-description">An isometric GDS layout with interconnect, device, via, and boundary layers.</desc>
+		<defs>
+			<linearGradient id="wafer" x1="0" y1="0" x2="1" y2="1">
+				<stop offset="0" stop-color="var(--gds-base-a)" />
+				<stop offset="1" stop-color="var(--gds-base-b)" />
+			</linearGradient>
+			<filter id="shadow" x="-20%" y="-20%" width="150%" height="160%">
+				<feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#000" flood-opacity=".42" />
+			</filter>
+		</defs>
+
+		<g class="die" filter="url(#shadow)" transform="translate(360 255) rotate(30) skewX(-30) scale(1 .86) translate(-275 -190)">
+			<rect class="substrate" width="550" height="380" rx="6" />
+			<g class="grid">
+				<path d="M40 0V380M80 0V380M120 0V380M160 0V380M200 0V380M240 0V380M280 0V380M320 0V380M360 0V380M400 0V380M440 0V380M480 0V380M520 0V380" />
+				<path d="M0 40H550M0 80H550M0 120H550M0 160H550M0 200H550M0 240H550M0 280H550M0 320H550M0 360H550" />
+			</g>
+			<g class="diffusion">
+				<rect x="42" y="55" width="188" height="72" />
+				<rect x="320" y="55" width="188" height="72" />
+				<rect x="42" y="253" width="188" height="72" />
+				<rect x="320" y="253" width="188" height="72" />
+			</g>
+			<g class="poly">
+				<path d="M78 32V150M112 32V150M150 32V150M184 32V150M356 32V150M390 32V150M428 32V150M462 32V150" />
+				<path d="M78 230V348M112 230V348M150 230V348M184 230V348M356 230V348M390 230V348M428 230V348M462 230V348" />
+			</g>
+			<g class="metal-one">
+				<path d="M25 91H525M25 289H525M136 25V355M414 25V355" />
+			</g>
+			<g class="metal-two">
+				<path d="M20 182H250V154H300V198H530" />
+				<path d="M275 20V118H250V260H275V360" />
+			</g>
+			<g class="vias">
+				<rect x="126" y="81" width="20" height="20" /><rect x="404" y="81" width="20" height="20" />
+				<rect x="126" y="279" width="20" height="20" /><rect x="404" y="279" width="20" height="20" />
+				<rect x="265" y="172" width="20" height="20" /><rect x="265" y="188" width="20" height="20" />
+			</g>
+			<rect class="boundary" x="18" y="18" width="514" height="344" />
+		</g>
+
+		<g class="annotation">
+			<path d="M540 125h94" /><circle cx="540" cy="125" r="3" />
+			<text x="646" y="129">M2</text>
+			<path d="M548 218h86" /><circle cx="548" cy="218" r="3" />
+			<text x="646" y="222">VIA</text>
+			<path d="M94 373H28" /><circle cx="94" cy="373" r="3" />
+			<text x="22" y="377" text-anchor="end">POLY</text>
+		</g>
+	</svg>
+	<figcaption>
+		<span><i class="layer layer--m2"></i> Metal 2</span>
+		<span><i class="layer layer--poly"></i> Poly</span>
+		<span><i class="layer layer--diff"></i> Diffusion</span>
+	</figcaption>
+</figure>
+
+<style>
+	.gds-preview {
+		--gds-base-a: #17232c;
+		--gds-base-b: #0d141a;
+		margin: 0;
+		border: 1px solid var(--line-strong);
+		background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+		box-shadow: var(--shadow);
+	}
+
+	:global(:root[data-theme='light']) .gds-preview {
+		--gds-base-a: #d8d5cd;
+		--gds-base-b: #bab9b3;
+	}
+
+	.gds-preview__bar,
+	figcaption {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.7rem 0.9rem;
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.64rem;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.gds-preview__bar {
+		border-bottom: 1px solid var(--line);
+	}
+
+	svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		background: radial-gradient(circle at 50% 44%, var(--signal-soft), transparent 55%);
+	}
+
+	.substrate {
+		fill: url('#wafer');
+		stroke: var(--line-strong);
+		stroke-width: 3;
+	}
+
+	.grid path {
+		fill: none;
+		stroke: var(--line);
+		stroke-width: 1;
+	}
+
+	.diffusion rect {
+		fill: color-mix(in srgb, var(--signal) 18%, transparent);
+		stroke: var(--signal);
+		stroke-width: 2;
+	}
+
+	.poly path {
+		fill: none;
+		stroke: #f06272;
+		stroke-width: 8;
+	}
+
+	.metal-one path {
+		fill: none;
+		stroke: #60a5fa;
+		stroke-width: 12;
+		stroke-linejoin: round;
+		opacity: 0.86;
+	}
+
+	.metal-two path {
+		fill: none;
+		stroke: var(--copper);
+		stroke-width: 16;
+		stroke-linejoin: round;
+	}
+
+	.vias rect {
+		fill: #f3de74;
+		stroke: #0b0d0e;
+		stroke-width: 2;
+	}
+
+	.boundary {
+		fill: none;
+		stroke: var(--text);
+		stroke-dasharray: 7 5;
+		stroke-width: 2;
+	}
+
+	.annotation path {
+		stroke: var(--faint);
+	}
+
+	.annotation circle {
+		fill: var(--copper);
+	}
+
+	.annotation text {
+		fill: var(--muted);
+		font-family: var(--mono);
+		font-size: 12px;
+	}
+
+	figcaption {
+		justify-content: flex-start;
+		border-top: 1px solid var(--line);
+		text-transform: none;
+	}
+
+	figcaption span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.layer {
+		display: block;
+		width: 0.65rem;
+		height: 0.2rem;
+	}
+
+	.layer--m2 {
+		background: var(--copper);
+	}
+
+	.layer--poly {
+		background: #f06272;
+	}
+
+	.layer--diff {
+		background: var(--signal);
+	}
+
+	@media (max-width: 440px) {
+		figcaption span:last-child {
+			display: none;
+		}
+	}
+</style>

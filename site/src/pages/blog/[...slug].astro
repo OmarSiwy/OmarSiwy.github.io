@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { readingTime, visibleBlogs } from '../../lib/content';
+
+export async function getStaticPaths() {
+	const posts = visibleBlogs(await getCollection('blog'));
+	return posts.map((post) => ({ params: { slug: post.data.slug }, props: { post } }));
+}
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<ContentLayout
+	title={post.data.title}
+	description={post.data.description}
+	eyebrow="Blog"
+	publishedAt={post.data.publishedAt}
+	updatedAt={post.data.updatedAt}
+	readingMinutes={readingTime(post.body)}
+	tags={post.data.tags}
+	headings={headings}
+	cover={post.data.cover}
+>
+	<Content />
+</ContentLayout>

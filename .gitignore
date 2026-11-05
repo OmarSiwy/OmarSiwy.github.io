@@ -50,7 +50,6 @@ result-*
 
 # Public assets (generated at build time)
 /public/
-/site/public/resume.pdf
 /site/public/gds/sar-adc.gds
 /site/public/gds/sar-adc-layout.json
 /site/public/gds/sar-adc-poster.svg
@@ -77,3 +76,16 @@ result-*
 
 # Claude Code config — never tracked
 .claude/
+
+# Proprietary course/textbook material — never published. Notes written about it are fine.
+*.zip
+/Notes/**/ref/
+/Notes/**/Pasted image *
+/Notes/**/Table of Contents.html
+/Notes/.claude/
+
+# Vault lives at the repo root too: Obsidian state, Claudian chat logs, scratch
+/.obsidian/
+/.claudian/
+/site/tp*.mjs
+/TODO.md

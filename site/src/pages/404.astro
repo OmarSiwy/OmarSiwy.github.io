@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="The requested page could not be found.">
+	<main id="main-content" class="missing page-width">
+		<p class="eyebrow">404 / Open circuit</p>
+		<h1>No signal at this address.</h1>
+		<p>The trace may have moved, or this note has not been written yet.</p>
+		<a class="button" href="/">Return home</a>
+	</main>
+</BaseLayout>
+
+<style>
+	.missing {
+		display: flex;
+		min-height: 75svh;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+	}
+
+	.missing h1 {
+		max-width: 10ch;
+		margin: 0;
+		font-size: clamp(3rem, 10vw, 8rem);
+		font-weight: 550;
+		letter-spacing: -0.07em;
+		line-height: 0.9;
+	}
+
+	.missing > p:not(.eyebrow) {
+		margin-block: 1.5rem;
+		color: var(--muted);
+	}
+</style>

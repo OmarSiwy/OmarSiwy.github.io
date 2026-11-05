@@ -60,6 +60,10 @@
               pkgs.curl
               pkgs.jq
 
+              # Playwright ships a generic dynamically linked browser that NixOS
+              # cannot execute, so `bun run check:search` drives this one instead.
+              pkgs.ungoogled-chromium
+
               # Simulating the Spade RTL embedded in the Digital Design notes.
               # The Spade compiler only type-checks and lowers; iverilog runs the
               # emitted Verilog against a testbench, so a bit-reversed adder
@@ -69,6 +73,7 @@
 
             RUST_BACKTRACE = "1";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtimeLibraries;
+            CHROMIUM_BIN = "${pkgs.ungoogled-chromium}/bin/chromium";
 
             shellHook = ''
               echo "Portfolio development environment"

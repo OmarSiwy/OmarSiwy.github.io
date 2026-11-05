@@ -1,0 +1,82 @@
+.hero-gds {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+}
+
+.hero-gds__viewport,
+.hero-gds__viewport > div,
+.hero-gds canvas {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.hero-gds__viewport {
+	position: absolute;
+	inset: 0 0 2.4rem;
+}
+
+.hero-gds canvas {
+	display: block;
+	pointer-events: none;
+}
+
+.hero-gds__loading {
+	display: grid;
+	width: 100%;
+	height: 100%;
+	place-items: center;
+	background:
+		linear-gradient(color-mix(in srgb, var(--line) 40%, transparent) 1px, transparent 1px),
+		linear-gradient(90deg, color-mix(in srgb, var(--line) 40%, transparent) 1px, transparent 1px);
+	background-size: 2rem 2rem;
+	color: var(--faint);
+	font-family: var(--mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	mask-image: radial-gradient(circle, #000 0%, transparent 68%);
+}
+
+.hero-gds figcaption {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.65rem 0.8rem;
+	border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+	background: color-mix(in srgb, var(--bg) 74%, transparent);
+	color: var(--faint);
+	font-family: var(--mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	backdrop-filter: blur(10px);
+}
+
+.hero-gds figcaption span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+}
+
+.hero-gds figcaption i {
+	display: block;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: var(--signal);
+	box-shadow: 0 0 0.7rem color-mix(in srgb, var(--signal) 70%, transparent);
+}
+
+@media (max-width: 640px) {
+	.hero-gds figcaption span:last-child {
+		display: none;
+	}
+}

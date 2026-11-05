@@ -1,0 +1,134 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import {
+	backlinksFor,
+	isNoteLanding,
+	noteCrumb,
+	noteDescription,
+	noteSectionId,
+	noteSlug,
+	noteTitle,
+	noteUrl,
+	orderedNotes,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+	const notes = orderedNotes(await getCollection('notes'));
+	return notes.map((note) => ({ params: { slug: noteSlug(note) }, props: { note, notes } }));
+}
+
+interface Props {
+	note: CollectionEntry<'notes'>;
+	notes: CollectionEntry<'notes'>[];
+}
+
+const { note, notes } = Astro.props;
+const backlinks = backlinksFor(note, notes);
+const sectionId = noteSectionId(note);
+const crumb = noteCrumb(note);
+// Siblings only. The vault has no per-folder landing page, so the folder name
+// is the heading rather than a link.
+const sectionNotes = orderedNotes(notes.filter((candidate) => noteSectionId(candidate) === sectionId));
+const { Content, headings } = await render(note);
+---
+
+<ContentLayout
+	title={noteTitle(note)}
+	description={noteDescription(note)}
+	eyebrow={`${note.data.kind} note`}
+	crumb={noteCrumb(note)}
+	updatedAt={note.data.updatedAt}
+	status={note.data.status}
+	headings={headings}
+>
+	<nav slot="sidebar" class="note-sidebar" aria-label={`${crumb || 'Notes'} index`}>
+		<p class="note-sidebar__heading">{crumb || 'Notes'}</p>
+		<button class="note-sidebar__search" type="button" data-search-open>
+			<span aria-hidden="true">&gt;</span> Search all notes
+		</button>
+		<ol>
+			{sectionNotes.map((sectionNote) => (
+				<li>
+					<a class:list={{ active: note.id === sectionNote.id }} href={noteUrl(sectionNote)}>
+						{noteTitle(sectionNote)}
+					</a>
+				</li>
+			))}
+		</ol>
+	</nav>
+	<Content />
+	{
+		backlinks.length > 0 && (
+			<aside slot="after" class="backlinks" aria-labelledby="backlinks-title" data-pagefind-ignore>
+				<h2 id="backlinks-title">Referenced by</h2>
+				<ul>
+					{backlinks.map((backlink) => <li><a href={noteUrl(backlink)}>{noteTitle(backlink)}</a></li>)}
+				</ul>
+			</aside>
+		)
+	}
+</ContentLayout>
+
+<style>
+	.note-sidebar {
+		font-family: var(--mono);
+		font-size: 0.72rem;
+	}
+
+	.note-sidebar__heading {
+		display: block;
+		margin: 0;
+		padding: 0.9rem 1rem;
+		color: var(--text);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		line-height: 1.35;
+		text-transform: uppercase;
+	}
+
+	.note-sidebar__search {
+		display: block;
+		width: 100%;
+		padding: 0.5rem 1rem;
+		border: 0;
+		border-top: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		background: none;
+		color: var(--signal);
+		cursor: pointer;
+		font-family: var(--mono);
+		font-size: 0.7rem;
+		text-align: left;
+	}
+
+	.note-sidebar__search:hover {
+		background: var(--signal-soft);
+	}
+
+	.note-sidebar ol {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.note-sidebar li + li {
+		border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+	}
+
+	.note-sidebar li a {
+		display: block;
+		padding: 0.62rem 0.8rem;
+		color: var(--muted);
+		line-height: 1.35;
+		text-decoration: none;
+	}
+
+	.note-sidebar a:hover,
+	.note-sidebar a.active {
+		background: var(--signal-soft);
+		color: var(--signal);
+	}
+</style>

@@ -1,0 +1,230 @@
+Thesis: A typical GEMM / GEMV occurs in two passes, a Prefill stage which is Compute bound, and a Decode stage which is memory-bound. Analog IMC architectures have been proven a faster latency than typical Systollic Arrays, however, they also are more dense toks/s/mm^2 that the systollic array, and more importantly have a higher cieling of compute-bound they can reach at the cost of being //harder to design//.
+
+To start this project, I had to tackle a lot of tooling issues, and also invented new tooling such that I can benefit from the usage of LLMs. I know it sounds like LLMs suck, but genuinely every digital designer I know uses it now because of how scary good it is (Opus 5.5 is at least). Even my old manager, currently at Meta, uses it extensively and just system designs. Why can't we analog designers use it for that exact same reason if it is good. See the Tooling page below, I talk about this and how I made it work. \\
+[[Tooling Deficiency]]
+
+Now, on the bread and butter. The actual Analog IMC that I've opted to call //High-Throughput Analog In-Memory Compute//, mainly because I realized that Analog IMC has very low latency, which could be good for batch, however, done right. It can be done MUCH denser, and provide more compute, and aid the memory-bound issue in systollic arrays, and in-general GEMM operations on chips like Etched's Sohu chip. Hence, my research compares the systollic array measurements I can find online of Sohu's chip and other ones versus mine on ASAP7 (A non-fabricatable PDK but should be good enough).
+
+==== Architecture ====
+A streaming, charge-domain IMC die. Weights stream from HBM into analog tiles just ahead of the activations that use them. Each tile multiplies by passive charge sharing and reads out once per weight column. A digital rail (need to covnert to analog) does attention, softmax and the KV cache.
+
+Prefill: All the weights are made capacitances. \\
+Multiply is: Q = C * V, Voltage streamed in and produces charge. \\
+Accumulate is: The column adding up all the charges
+
+
+Photo:
+
+
+Blocks:
+
+^ # ^ Block ^ Implementation ^ Key numbers ^
+| B1 | Weight store | Gain cell holding W8 as two 4-b slices of charge on MOM capacitors (MSB 1 fF, LSB 0.25 fF units), differential | 8 rows × 256 columns × 2 slices per tile; write 0.70 fJ/bit; retention ≥ 1.32 µs (P). At transistor level it needs a buffered output: 5 T per bit, not 3 (M) |
+| B2 | Row drive | BS6H: bit-serial %%|%%x%%|%% planes on 0/V rails, 6-tick (0.849 ns) slots, 7 slots per word | Settling 0.067 % at the share edge (M); needs R_PDN ≤ 0.4 Ω per tile; 108 pJ per pass (D) |
+| B3 | Column | Bootstrapped share switch, C_col 56 fF, two ping-pong accumulation banks, 1:16 MSB/LSB charge merge on the idle bank | Merge hidden under the next pass; 88 pF of bank caps per tile (D, not yet priced in the score) |
+| B4 | Column ADC | E-trim noise-aware 12-b SAR: 6 decisions on a fast double-tail (1.82 mV), a redundant step, then 7 on a quiet tail-starved double-tail (0.60 mV); 3 columns per converter; the MSB bank is the C-DAC | 1.61 ns and 277 fJ per conversion (D on M); 86 converters per tile |
+| B5 | Reference | Class-A buffered C-DAC reference, shared per tile | ≤ 3.7 µV droop per conversion (spec; the Verilog-A bench shows 130, open) |
+
+
+
+==== Tradeoffs between blocks (The pareto set) ====
+
+^ Row drive ^ Readout ^ Cell and caps ^ Other ^ tok/s ^ TOPS/W ^ tok/W ^ tok/J ^ What it trades ^
+| **Bit-serial, 6-tick slots (5.94 ns word)** | **E-trim double-tail SAR, 3 columns per converter, ping-pong banks** | **Buffered gain cell; 1 / 0.25 fF units; bank caps in their own MOM area (18.4k µm² per tile)** | KV 4/8, 16 MB, class-A reference | **49,168** | **13.21** |  |  | The chosen design, with every known cost priced |
+| same | same | bank caps placed under the array in shared metal | same | 66,565 | 11.60 |  |  | +35 % tok/s and −12 % TOPS/W, if layout can stack the caps |
+| same | E-trim SAR, **4** columns per converter | bank caps priced | same | 43,196 | 12.78 |  |  | 22 fewer converters (−1.2k µm² per tile); conversion binds the pass at 7.36 ns: −12 % tok/s |
+| 4-level, 2 b per slot, levels from **two extra die supply nets** | Sampled 11-b SAR | 2 fF units | KV 4/8, 16 MB, LVT logic | 68,488 | 10.47 | 611 | 625 | Fastest feasible-on-paper point, closes SS and FF. Needs the two mid-level nets at ≤ 1.3 Ω per tile (not extracted). −21 % TOPS/W against the chosen design |
+| Bit-serial from VDD/GND, 7-tick slots | Sampled 11-b SAR | 2 fF units | KV 4/8, 16 MB, LVT logic | 61,495 | 9.65 | 568 | 568 | The same tile without the extra nets: corner-clean, −10 % tok/s |
+| Bit-serial, bottom-plate sampled, constant-charge rows (32-fin) | Direct 12-b SAR shared by 4 pooled tiles | 1 fF units | KV 4/8, 16 MB | 64,188 | 9.78 | 559 | 571 | No extra nets and no droop calibration; 6.56 ns pass, 20.9k µm² tile, G2 margin only +0.14 dB |
+| 4-level, buffered levels per tile | Pipelined residue-amp SAR, 6 columns per converter on 4 pooled tiles, 3 b per cycle | 1.25 fF units | KV 4/8, 16 MB | 60,835 | 11.22 | 629 | 643 | Fewest converters. The pooling bus wire and preamp area are the risk, and pooling is incompatible with block-8 scales |
+| 4-level, buffered levels per tile | Residue-amp 12-b SAR, 4 columns per converter, bridge merge | 1.75 fF units | KV 4/8, 16 MB | 47,129 | 10.05 |  |  | TT only. With 2.5 fF units it closes the corners at 33.6k (−28 %) |
+| 4-level, buffered levels per tile | Direct 12-b StrongARM SAR on 4 pooled tiles | 3T gain cell, 0.2 fF LSB units | KV 4/8, 16 MB | 68,890 | 10.88 | 613 | 629 | **Infeasible**: the level buffers do not settle (0.64 %, M) and the StrongARM noise fails G2 by 7.9 dB (M) |
+| 4-level, buffered levels per tile | Direct 12-b StrongARM SAR on 4 pooled tiles, 86 µV comparator assumed | 1 / 0.25 fF units | KV 4/8, 16 MB, bandgap-free reference | 67,922 | 15.56 | 825 | 834 | **Infeasible**, same two reasons. The level buffers alone would draw about 140 W per die (D) |
+| none (weight-MSB digital hybrid) | Sampled 11-b SAR | 2 fF units | KV 8, 2 MB, LVT logic | 47,766 | 9.63 | 512 | 549 | Built for corners: +0.52 dB at SS, +0.86 dB at FF with no adaptive VDD. Adding KV 4/8 and 16 MB gives 62,014 / 10.42 |
+| 4-level | 11-b SAR | 1 fF units | KV 8, 8 MB, SLVT logic | 53,864 | 10.45 | 547 | 690 | The KV8 tok/s end. Fails SS by 1.60 dB; SLVT leakage puts the FF die over 1 W/mm² |
+| 4-level | Time-domain (VTC) SAR on pooled tiles | 1 fF units | KV 8, 32 MB, LVT logic, lean INT8 rail | 52,157 | 16.38 | 767 | 945 | −3 % tok/s for 1.57× TOPS/W against the line above |
+| 4-level | Time-domain (VTC) SAR | 1 fF units | KV 8, 32 MB, charge-reservoir reference, lean rail | 34,976 | 27.17 | 1,069 | 1,115 | The TOPS/W end: the reservoir reference is cheap but slow. Against the KV8 tok/s end: −35 % tok/s for 2.6× TOPS/W |
+| PWM inputs (2⁸ time steps) | Time-domain SAR | pure charge domain | KV 8, 8 MB | 17,548 | 27.55 | 1,078 | 1,078 | Shows why PWM is rejected: −50 % tok/s for no TOPS/W gain over the line above |
+| — | — | — | Systolic, synthesized INT8 PE, same formats | 46,398 | 10.61 | 600 | 968 | The baseline |
+| — | — | — | Systolic, literature INT8 PE, same formats | 61,005 | 18.30 | 939 | 1,705 | The strongest baseline |
+
+
+
+===== TIMELINE =====
+Still not clear, it depends heavily on the tooling which should be done in a week worth of time.
+
+==== Papers reading list ====
+
+=== Foundations & History ===
+
+  * [[https://doi.org/10.1109/TCT.1971.1083337|Memristor — the missing circuit element (Chua)]], IEEE TCT 1971
+  * [[https://doi.org/10.1109/PROC.1976.10092|Memristive devices and systems (Chua & Kang)]], Proc. IEEE 1976
+  * [[https://doi.org/10.1073/pnas.79.8.2554|Neural networks with emergent collective computational abilities (Hopfield)]], PNAS 1982
+  * [[https://doi.org/10.1073/pnas.81.10.3088|Neurons with graded response (Hopfield)]], PNAS 1984
+  * [[https://scholar.google.com/scholar?q=Electrically+trainable+ANN+with+floating-gate+synapses+%28Holler%29+IJCNN+1989|Electrically trainable ANN with floating-gate synapses (Holler)]], IJCNN 1989
+  * [[https://scholar.google.com/scholar?q=Single-transistor+silicon+synapse+%28Diorio%2C+Hasler%2C+Minch%2C+Mead%29+1996|Single-transistor silicon synapse (Diorio, Hasler, Minch, Mead)]], 1996
+  * [[https://scholar.google.com/scholar?q=Floating-gate+synapse+arrays+%28Diorio%29+1997|Floating-gate synapse arrays (Diorio)]], 1997
+  * [[https://doi.org/10.1088/2634-4386/ad9b4a|Historical perspective on analog/neuromorphic computing (Hasler)]], NCE 2025
+  * [[https://scholar.google.com/scholar?q=The+missing+memristor+has+not+been+found+%28Vongehr%29+Sci.+Rep.+2015|The missing memristor has not been found (Vongehr)]], Sci. Rep. 2015
+  * [[https://doi.org/10.1038/nmat3307|Nanobatteries in redox-based resistive switches (Valov) — key/DOI mismatch, verify]], Nat. Mater. 2012
+
+=== Surveys & Perspectives ===
+
+  * [[https://doi.org/10.1038/s41928-018-0092-2|In-memory computing with resistive switching devices (Ielmini & Wong)]], Nat. Electron. 2018
+  * [[https://doi.org/10.1038/s41565-020-0655-z|Memory devices and applications for in-memory computing (Sebastian)]], Nat. Nanotech. 2020
+  * [[https://doi.org/10.1038/nmat4134|Memory leads the way to better computing (Wong & Salahuddin)]], Nat. Mater. 2015
+  * [[https://doi.org/10.1038/s41563-019-0291-x|Memristive crossbar arrays for brain-inspired computing (Xia & Yang)]], Nat. Mater. 2019
+  * [[https://doi.org/10.1038/s41928-017-0006-8|The future of electronics based on memristive systems (Zidan)]], Nat. Electron. 2018
+  * [[https://scholar.google.com/scholar?q=Hardware+implementation+of+memristor-based+ANNs+%28Aguirre%29+Nat.+Commun.+2024|Hardware implementation of memristor-based ANNs (Aguirre)]], Nat. Commun. 2024
+  * [[https://scholar.google.com/scholar?q=Overview+of+PCM+for+in-memory+computing+%28Le+Gallo+%26+Sebastian%29+J.+Phys.+D+2020|Overview of PCM for in-memory computing (Le Gallo & Sebastian)]], J. Phys. D 2020
+  * [[https://scholar.google.com/scholar?q=Resistive+switching+survey+%28Ielmini%29+2025|Resistive switching survey (Ielmini)]], 2025
+  * [[https://scholar.google.com/scholar?q=Next-generation+device+specifications+survey+%28Haensch%29+2018|Next-generation device specifications survey (Haensch)]], 2018
+  * [[https://scholar.google.com/scholar?q=Mixed-signal+circuits+for+ML+%28Murmann%29+2021|Mixed-signal circuits for ML (Murmann)]], 2021
+  * [[https://arxiv.org/abs/2603.08725|Performance analysis of edge and in-sensor AI processors (Capogrosso)]], arXiv 2026
+  * [[https://doi.org/10.1038/s41928-024-01258-1|Powering AI at the edge (Jebali)]], Nat. Electron. 2024
+
+=== Devices — PCM ===
+
+  * [[https://doi.org/10.1109/TED.2015.2439635|Experimental demo & tolerancing of a 165k-synapse network (Burr)]], IEEE TED 2015
+  * [[https://scholar.google.com/scholar?q=Phase-change+memory+programming+%28Suri%29+IEDM+2011|Phase-change memory programming (Suri)]], IEDM 2011
+  * [[https://scholar.google.com/scholar?q=Reducing+PCM+conductance+drift+%28Ambrogio%29+IEDM+2019|Reducing PCM conductance drift (Ambrogio)]], IEDM 2019
+  * [[https://scholar.google.com/scholar?q=Phase-change+heterostructure+drift+suppression+%28Ding%29+Science+2019|Phase-change heterostructure drift suppression (Ding)]], Science 2019
+  * [[https://scholar.google.com/scholar?q=Phase-change+materials+study+%28Syed%29+2025|Phase-change materials study (Syed)]], 2025
+  * [[https://scholar.google.com/scholar?q=Combined+HW%2FSW+mitigation+for+PCM+AIMC+%28Antolini%29+IEEE+JETCAS+2023|Combined HW/SW mitigation for PCM AIMC (Antolini)]], IEEE JETCAS 2023
+  * [[https://scholar.google.com/scholar?q=Role+of+temperature+in+PCM-based+AIMC+%28Antolini%29+2025|Role of temperature in PCM-based AIMC (Antolini)]], 2025
+  * [[https://scholar.google.com/scholar?q=Toward+practical+PCM+CIM+%28Wu%29+2024|Toward practical PCM CIM (Wu)]], 2024
+  * [[https://scholar.google.com/scholar?q=Temperature+effects+on+analog+CIM+%28Guo%29+IEDM+2017|Temperature effects on analog CIM (Guo)]], IEDM 2017
+
+=== Devices — RRAM / Memristor ===
+
+  * [[https://doi.org/10.1038/ncomms3072|Pattern classification by memristive crossbar circuits (Alibart)]], Nat. Commun. 2013
+  * [[https://doi.org/10.1109/JPROC.2012.2190369|Metal–oxide RRAM (Wong)]], Proc. IEEE 2012
+  * [[https://scholar.google.com/scholar?q=Electronic+transport+in+memristive+devices+%28Yu%29+2011|Electronic transport in memristive devices (Yu)]], 2011
+  * [[https://scholar.google.com/scholar?q=Dot-product+engine+%28Hu%29+DAC+2016|Dot-product engine (Hu)]], DAC 2016
+  * [[https://scholar.google.com/scholar?q=Crossbar+background+current+%28Jung%29+2022|Crossbar background current (Jung)]], 2022
+  * [[https://scholar.google.com/scholar?q=Fundamental+limits+of+passive+crossbars+%28Roy%29+2022|Fundamental limits of passive crossbars (Roy)]], 2022
+  * [[https://scholar.google.com/scholar?q=Comparative+crossbar+device+analysis+%28Wang%29+2023|Comparative crossbar device analysis (Wang)]], 2023
+  * [[https://scholar.google.com/scholar?q=Comparative+on%2Foff+ratios+%28Victor%29+2024|Comparative on/off ratios (Victor)]], 2024
+  * [[https://scholar.google.com/scholar?q=Thirty-two-level+memristor+%28Huang%29+2024|Thirty-two-level memristor (Huang)]], 2024
+  * [[https://scholar.google.com/scholar?q=Conductance+control+and+precision+%28Pedretti%29+2021|Conductance control and precision (Pedretti)]], 2021
+  * [[https://scholar.google.com/scholar?q=Two-step+weight+programming+%28Shim%29+2020|Two-step weight programming (Shim)]], 2020
+  * [[https://scholar.google.com/scholar?q=Multilevel+programming+methodologies+%28Song%29+2024|Multilevel programming methodologies (Song)]], 2024
+  * [[https://scholar.google.com/scholar?q=Linear+conductance+control+in+multilevel+devices+%28Sharma%29+2024|Linear conductance control in multilevel devices (Sharma)]], 2024
+  * [[https://scholar.google.com/scholar?q=Fault-free+weight+programming+%28Li%29+2025|Fault-free weight programming (Li)]], 2025
+  * [[https://scholar.google.com/scholar?q=Fault-free+multilevel+programming+%28Xu%29+2025|Fault-free multilevel programming (Xu)]], 2025
+  * [[https://scholar.google.com/scholar?q=Layer-wise+programming+optimization+%28Yousuf%29+2024|Layer-wise programming optimization (Yousuf)]], 2024
+  * [[https://scholar.google.com/scholar?q=RRAM+intermediate-state+dynamics+%28Zhao%29+2017|RRAM intermediate-state dynamics (Zhao)]], 2017
+  * [[https://scholar.google.com/scholar?q=Endurance+under+analog+updates+%28Zhao%29+2018|Endurance under analog updates (Zhao)]], 2018
+  * [[https://scholar.google.com/scholar?q=Reliability+and+aging+in+analog+memory+%28Zhao%29+2020|Reliability and aging in analog memory (Zhao)]], 2020
+  * [[https://scholar.google.com/scholar?q=40+nm+memory+device+characterization+%28Yoon%29+2021|40 nm memory device characterization (Yoon)]], 2021
+
+=== Devices — ECRAM, FeFET, MRAM, Floating Gate ===
+
+  * [[https://scholar.google.com/scholar?q=Li-ion+synaptic+transistor+%28Fuller%29+Adv.+Mater.+2017|Li-ion synaptic transistor (Fuller)]], Adv. Mater. 2017
+  * [[https://scholar.google.com/scholar?q=Parallel+programming+of+ionic+floating-gate+arrays+%28Fuller%29+Science+2019|Parallel programming of ionic floating-gate arrays (Fuller)]], Science 2019
+  * [[https://scholar.google.com/scholar?q=ECRAM+devices+%28Talin%29+2022|ECRAM devices (Talin)]], 2022
+  * [[https://doi.org/10.1126/science.abp8064|Nanosecond protonic programmable resistors (Onen)]], Science 2022
+  * [[https://scholar.google.com/scholar?q=Electrochemical+synapse+%28Chen%29+Nat.+Commun.+2025|Electrochemical synapse (Chen)]], Nat. Commun. 2025
+  * [[https://scholar.google.com/scholar?q=Exploiting+FeFET+properties+%28Sun%29+2018|Exploiting FeFET properties (Sun)]], 2018
+  * [[https://scholar.google.com/scholar?q=First+FeFET+CIM+demonstration+%28Soliman%29+2023|First FeFET CIM demonstration (Soliman)]], 2023
+  * [[https://scholar.google.com/scholar?q=STT-MRAM+for+in-memory+compute+%28Cai%29+2023|STT-MRAM for in-memory compute (Cai)]], 2023
+  * [[https://scholar.google.com/scholar?q=Floating-gate+die-to-die+reproducibility+%28Guo%29+2017|Floating-gate die-to-die reproducibility (Guo)]], 2017
+  * [[https://scholar.google.com/scholar?q=High-precision+floating-gate+networks+%28Merrikh-Bayat%29+2018|High-precision floating-gate networks (Merrikh-Bayat)]], 2018
+  * [[https://scholar.google.com/scholar?q=Crossbar+implementations+%28Merrikh-Bayat%29+2018|Crossbar implementations (Merrikh-Bayat)]], 2018
+  * [[https://scholar.google.com/scholar?q=Monolithic+3D+memristive+integration+%28Dutta%29+2020|Monolithic 3D memristive integration (Dutta)]], 2020
+  * [[https://scholar.google.com/scholar?q=BEOL+integration+for+analog+systems+%28Qian%29+2025|BEOL integration for analog systems (Qian)]], 2025
+  * [[https://arxiv.org/abs/2605.28208|FCDC (Abouagor)]], arXiv 2026
+
+=== Circuits — SRAM / Charge-Domain CIM ===
+
+  * [[https://scholar.google.com/scholar?q=Towards+capacitive+in-memory+computing+%28Bhardwaj%29+2025|Towards capacitive in-memory computing (Bhardwaj)]], 2025
+  * [[https://scholar.google.com/scholar?q=CAP-RAM+%28Chen%29+2021|CAP-RAM (Chen)]], 2021
+  * [[https://scholar.google.com/scholar?q=PICO-RAM+%28Chen%29+2024|PICO-RAM (Chen)]], 2024
+  * [[https://scholar.google.com/scholar?q=89+TOPS%2FW+all-digital+SRAM+CIM+macro%2C+22+nm+%28Chih%29+ISSCC+2021|89 TOPS/W all-digital SRAM CIM macro, 22 nm (Chih)]], ISSCC 2021
+  * [[https://doi.org/10.1109/ISSCC42614.2022.9731754|5 nm digital SRAM CIM (Fujiwara)]], ISSCC 2022
+  * [[https://scholar.google.com/scholar?q=3+nm+digital+SRAM+CIM+%28Fujiwara%29+ISSCC+2024|3 nm digital SRAM CIM (Fujiwara)]], ISSCC 2024
+  * [[https://scholar.google.com/scholar?q=Verifying+analog+SRAM+PVT+insensitivity+%28Zhang%29+2024|Verifying analog SRAM PVT insensitivity (Zhang)]], 2024
+  * [[https://scholar.google.com/scholar?q=Charge-domain+multi-tile+integration+%28Xuan%29+2026|Charge-domain multi-tile integration (Xuan)]], 2026
+  * [[https://scholar.google.com/scholar?q=40+nm+analog+CIM+%28Jiang%29+2022|40 nm analog CIM (Jiang)]], 2022
+  * [[https://scholar.google.com/scholar?q=40+nm+memory+technologies+%28Khwa%29+2022|40 nm memory technologies (Khwa)]], 2022
+  * [[https://scholar.google.com/scholar?q=16-bit+precision+analog+CIM+%28Khwa%29+2024|16-bit precision analog CIM (Khwa)]], 2024
+  * [[https://scholar.google.com/scholar?q=18-bit+precision+analog+CIM+%28Yoshioka%29+2023|18-bit precision analog CIM (Yoshioka)]], 2023
+  * [[https://scholar.google.com/scholar?q=4+nm+analog+CIM+considerations+%28Mori%29+2023|4 nm analog CIM considerations (Mori)]], 2023
+  * [[https://scholar.google.com/scholar?q=CMOS-based+memory+technologies+%28Chen%29+2019|CMOS-based memory technologies (Chen)]], 2019
+
+=== Circuits — Limits, ADCs, Readout ===
+
+  * [[https://scholar.google.com/scholar?q=Fundamental+limits+on+energy-delay-accuracy+of+IMC+%28Gonugondla%29+IEEE+TCAD+2022|Fundamental limits on energy-delay-accuracy of IMC (Gonugondla)]], IEEE TCAD 2022
+  * [[https://scholar.google.com/scholar?q=Fundamental+limits+%28conference+version%2C+Gonugondla%29+2020|Fundamental limits (conference version, Gonugondla)]], 2020
+  * [[https://scholar.google.com/scholar?q=Approximate+converters+%2F+CCO+area+penalties+%28Ghosh%29+2024|Approximate converters / CCO area penalties (Ghosh)]], 2024
+  * [[https://scholar.google.com/scholar?q=CASCADE%3A+analog+dataflow+with+RRAM+%28Chou%29+MICRO+2019|CASCADE: analog dataflow with RRAM (Chou)]], MICRO 2019
+  * [[https://scholar.google.com/scholar?q=IRQNN%3A+wordline%2Fbitline+droop+%28Fouda%29+2021|IRQNN: wordline/bitline droop (Fouda)]], 2021
+  * [[https://scholar.google.com/scholar?q=Accurate+droop+modeling+%28Lee%29+2022|Accurate droop modeling (Lee)]], 2022
+  * [[https://scholar.google.com/scholar?q=Rapid+read-noise+characterization+%28Luquin%29+2025|Rapid read-noise characterization (Luquin)]], 2025
+
+=== Training & Algorithms ===
+
+  * [[https://doi.org/10.3389/fnins.2016.00333|Acceleration of DNN training with resistive cross-point devices (Gokmen)]], Front. Neurosci. 2016
+  * [[https://doi.org/10.3389/fnins.2017.00538|Training CNNs with resistive cross-point devices (Gokmen)]], Front. Neurosci. 2017
+  * [[https://doi.org/10.1109/IEDM19573.2019.8993573|Marriage of training and inference (Gokmen)]], IEDM 2019
+  * [[https://doi.org/10.3389/fnins.2020.00103|Algorithm for training on resistive device arrays — Tiki-Taka (Gokmen)]], Front. Neurosci. 2020
+  * [[https://scholar.google.com/scholar?q=Enabling+training+on+noisy+hardware+2021|Enabling training on noisy hardware — TTv2 (Gokmen)]], 2021
+  * [[https://doi.org/10.1038/nature14441|Training with integrated memristor crossbars (Prezioso)]], Nature 2015
+  * [[https://doi.org/10.1038/s41467-020-16108-9|Accurate DNN inference with PCM (Joshi)]], Nat. Commun. 2020
+  * [[https://scholar.google.com/scholar?q=Scalable+symmetry-point+calibration+%28U%29+2024|Scalable symmetry-point calibration (U)]], 2024
+  * [[https://arxiv.org/abs/2608.02700|NANQ (Chen)]], arXiv 2026
+  * [[https://scholar.google.com/scholar?q=Analog+network+fault+tolerance+%28Jaffe%29+2024|Analog network fault tolerance (Jaffe)]], 2024
+  * [[https://arxiv.org/abs/2505.09663|Analog Foundation Models (Büchel)]], NeurIPS 2025
+  * [[https://arxiv.org/abs/2506.18495|AnalogNAS-Bench (Bessalah)]], arXiv 2025
+
+=== Architectures & Systems ===
+
+  * [[https://doi.org/10.1109/ISCA.2016.12|ISAAC (Shafiee)]], ISCA 2016
+  * [[https://doi.org/10.1109/ISCA.2016.13|PRIME (Chi)]], ISCA 2016
+  * [[https://scholar.google.com/scholar?q=PipeLayer+%28Song%29+2017|PipeLayer (Song)]], 2017
+  * [[https://doi.org/10.1145/3297858.3304049|PUMA (Ankit)]], ASPLOS 2019
+  * [[https://scholar.google.com/scholar?q=Programmable+analog+array+design+%28Jia%29+2020|Programmable analog array design (Jia)]], 2020
+  * [[https://scholar.google.com/scholar?q=Scalable+in-memory+computing+accelerator+%28Jia%29+2022|Scalable in-memory computing accelerator (Jia)]], 2022
+  * [[https://scholar.google.com/scholar?q=Multiscale+analog+systems+%28Marinella%29+2018|Multiscale analog systems (Marinella)]], 2018
+  * [[https://scholar.google.com/scholar?q=HERMES+core+%28Khaddam-Aljameh%29+2021|HERMES core (Khaddam-Aljameh)]], 2021
+  * [[https://scholar.google.com/scholar?q=HERMES+core%2C+end-to-end+%28Khaddam-Aljameh%29+2022|HERMES core, end-to-end (Khaddam-Aljameh)]], 2022
+  * [[https://doi.org/10.1038/s41928-023-01010-1|64-core mixed-signal IMC chip (Le Gallo)]], Nat. Electron. 2023
+  * [[https://doi.org/10.1038/s41586-023-06337-5|Analog-AI chip for speech recognition (Ambrogio)]], Nature 2023
+  * [[https://doi.org/10.1038/s41586-022-04992-8|CIM chip based on RRAM — NeuRRAM (Wan)]], Nature 2022
+  * [[https://doi.org/10.1038/s41586-020-1942-4|Fully hardware-implemented memristor CNN (Yao)]], Nature 2020
+  * [[https://scholar.google.com/scholar?q=Fully+digital+alternatives+%28Li%29+2025|Fully digital alternatives (Li)]], 2025
+  * [[https://scholar.google.com/scholar?q=In-memory+computing+architectures+%28Li%29+2025|In-memory computing architectures (Li)]], 2025
+
+=== LLMs & Transformers on AIMC ===
+
+  * [[https://doi.org/10.1038/s43588-024-00753-x|Efficient scaling of LLMs with MoE and 3D AIMC (Büchel)]], Nat. Comput. Sci. 2025
+  * [[https://arxiv.org/abs/2409.19315|Analog in-memory computing attention (Leroux)]], arXiv 2024
+  * [[https://scholar.google.com/scholar?q=Efficient+transformer+mapping+%28Subramoney%29+2025|Efficient transformer mapping (Subramoney)]], 2025
+  * [[https://scholar.google.com/scholar?q=Efficient+analog+transformers+%28Yang%29+2025|Efficient analog transformers (Yang)]], 2025
+  * [[https://arxiv.org/abs/2607.29076|Selective ... — title TBD (Feng)]], arXiv 2026
+  * [[https://scholar.google.com/scholar?q=UNICAIM+%28Xu%29+arXiv+2025|UNICAIM (Xu)]], arXiv 2025
+
+=== Simulators & Benchmarking ===
+
+  * [[https://doi.org/10.1109/TCAD.2018.2789723|NeuroSim (Chen)]], IEEE TCAD 2018
+  * [[https://doi.org/10.1109/IEDM19573.2019.8993491|DNN+NeuroSim (Peng)]], IEDM 2019
+  * [[https://scholar.google.com/scholar?q=NeuroSim+v2.0+%28Peng%29+2020|NeuroSim v2.0 (Peng)]], 2020
+  * [[https://doi.org/10.1109/TCSI.2024.3362822|NeuroSim v1.4 (Lee)]], IEEE TCSI 2024
+  * [[https://arxiv.org/abs/2405.07259|CiMLoop (Andrulis, Emer, Sze)]], arXiv 2024
+  * [[https://scholar.google.com/scholar?q=AIHWKit+%28Le+Gallo%29+APL+Mach.+Learn.+2023|AIHWKit (Le Gallo)]], APL Mach. Learn. 2023
+  * [[https://scholar.google.com/scholar?q=AIHWKit+extensions+%28Huang%29+2025|AIHWKit extensions (Huang)]], 2025
+  * [[https://scholar.google.com/scholar?q=Comprehending+the+AIMC+landscape+%28Shanbhag%29+2022|Comprehending the AIMC landscape (Shanbhag)]], 2022
+  * [[https://scholar.google.com/scholar?q=Benchmarking+standards+for+analog+IMC+%28Shanbhag%29+2022|Benchmarking standards for analog IMC (Shanbhag)]], 2022
+  * [[https://scholar.google.com/scholar?q=Comprehensive+analog+CIM+analysis+%28Sun%29+2024|Comprehensive analog CIM analysis (Sun)]], 2024
+  * [[https://scholar.google.com/scholar?q=Scaling+analog+CIM+systems+%28Kim%29+2024|Scaling analog CIM systems (Kim)]], 2024
+  * [[https://scholar.google.com/scholar?q=Compute-in-memory+architectures+and+energy+%28Yu%29+2021|Compute-in-memory architectures and energy (Yu)]], 2021
+  * [[https://scholar.google.com/scholar?q=Digital+IMC+comparisons+%28Wang%29+2022|Digital IMC comparisons (Wang)]], 2022
+
+=== Beyond MVM (Solvers, Sparse, Mixed-Precision) ===
+
+  * [[https://doi.org/10.1038/s41928-018-0054-8|Mixed-precision in-memory computing (Le Gallo)]], Nat. Electron. 2018
+  * [[https://doi.org/10.1038/nnano.2017.83|Sparse coding with memristor networks (Sheridan)]], Nat. Nanotech. 2017
+  * [[https://doi.org/10.1073/pnas.1815682116|Solving matrix equations in one step (Sun)]], PNAS 2019
+  * [[https://scholar.google.com/scholar?q=Eigenvector+computation+in+one+step+%28Sun%29+2020|Eigenvector computation in one step (Sun)]], 2020
+  * [[https://scholar.google.com/scholar?q=One-step+regression+%2F+matrix+inversion+%28Sun%29+2020|One-step regression / matrix inversion (Sun)]], 2020
+  * [[https://scholar.google.com/scholar?q=FloatPIM+%28Imani%29+ISCA+2019|FloatPIM (Imani)]], ISCA 2019

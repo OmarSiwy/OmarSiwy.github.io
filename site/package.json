@@ -1,0 +1,49 @@
+{
+	"name": "portfolio-site",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"scripts": {
+		"predev": "bun run generate:diagrams",
+		"dev": "astro dev",
+		"prebuild": "bun run generate:diagrams",
+		"build": "bun run check:content && astro build && bun run index:search",
+		"index:search": "pagefind --site dist --exclude-selectors \".katex, .heading-anchor\"",
+		"precheck": "bun run generate:diagrams",
+		"check": "bun run check:astro && bun run check:content && bun run check:callouts",
+		"check:callouts": "bun scripts/check-callouts.ts",
+		"check:astro": "astro check",
+		"check:content": "bun scripts/check-content-links.ts",
+		"check:search": "bun scripts/check-search.ts",
+		"generate:diagrams": "bun ../build/markdown/generate-latex-diagrams.ts",
+		"test": "bun run check",
+		"preview": "astro preview"
+	},
+	"dependencies": {
+		"@astrojs/markdown-remark": "^7.2.1",
+		"@astrojs/react": "^6.0.1",
+		"@astrojs/rss": "^4.0.19",
+		"@astrojs/sitemap": "^3.7.3",
+		"@react-three/fiber": "^9.6.1",
+		"astro": "^7.1.1",
+		"gdsii": "0.1.0",
+		"katex": "^0.18.0",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7",
+		"rehype-autolink-headings": "^7.1.0",
+		"rehype-katex": "^7.0.1",
+		"rehype-slug": "^6.0.0",
+		"remark-math": "^6.0.0",
+		"three": "^0.185.1",
+		"unist-util-visit": "^5.1.0"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.9",
+		"@types/react": "^19.2.17",
+		"@types/react-dom": "^19.2.3",
+		"@types/three": "^0.185.1",
+		"pagefind": "^1.5.2",
+		"playwright": "^1.62.1",
+		"typescript": "^5.9.3"
+	}
+}

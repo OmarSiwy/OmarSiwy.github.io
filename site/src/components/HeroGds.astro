@@ -1,0 +1,265 @@
+<figure class="hero-gds" data-hero-gds>
+	<div class="hero-gds__viewport">
+		<canvas aria-label="Auto-rotating layered view of an 8-bit SAR ADC GDSII layout"></canvas>
+		<div class="hero-gds__loading" data-gds-loading role="status">Loading GDSII…</div>
+	</div>
+	<figcaption>
+		<span><i aria-hidden="true"></i> <b data-gds-status>GDSII · loading</b></span>
+		<span data-gds-metrics>SAR ADC · 8 bit</span>
+	</figcaption>
+</figure>
+
+<script>
+	interface GdsLayer {
+		id: string;
+		color: string;
+		z: number;
+		opacity: number;
+		rectangles: Array<[number, number, number, number, ...number[]]>;
+	}
+
+	interface GdsLayout {
+		bounds: [number, number, number, number];
+		layers: GdsLayer[];
+		metrics?: { instances?: number };
+	}
+
+	const hiddenLayers = new Set(['substrate', 'nwell']);
+	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+	function setupGdsViewer(figure: HTMLElement) {
+		if (figure.dataset.ready) return;
+		figure.dataset.ready = 'true';
+
+		const canvas = figure.querySelector<HTMLCanvasElement>('canvas');
+		const viewport = figure.querySelector<HTMLElement>('.hero-gds__viewport');
+		const loading = figure.querySelector<HTMLElement>('[data-gds-loading]');
+		const status = figure.querySelector<HTMLElement>('[data-gds-status]');
+		const metrics = figure.querySelector<HTMLElement>('[data-gds-metrics]');
+		const context = canvas?.getContext('2d', { alpha: true });
+		if (!canvas || !viewport || !loading || !status || !metrics || !context) return;
+		const viewer = { canvas, viewport, loading, status, metrics, context };
+
+		let layout: GdsLayout | null = null;
+		let animationFrame = 0;
+		let angle = -0.58;
+		let lastFrameTime = 0;
+		let isVisible = true;
+
+		function resizeCanvas() {
+			const bounds = viewer.viewport.getBoundingClientRect();
+			const pixelRatio = Math.min(devicePixelRatio || 1, 1.4);
+			viewer.canvas.width = Math.max(1, Math.round(bounds.width * pixelRatio));
+			viewer.canvas.height = Math.max(1, Math.round(bounds.height * pixelRatio));
+			viewer.canvas.style.width = `${bounds.width}px`;
+			viewer.canvas.style.height = `${bounds.height}px`;
+			if (layout) drawLayout(viewer.context, viewer.canvas, layout, angle, pixelRatio);
+		}
+
+		function animate(time: number) {
+			if (!layout || !isVisible || reducedMotion.matches) {
+				animationFrame = 0;
+				return;
+			}
+			if (time - lastFrameTime >= 32) {
+				angle += Math.min(time - lastFrameTime, 64) * 0.00012;
+				lastFrameTime = time;
+				drawLayout(viewer.context, viewer.canvas, layout, angle, Math.min(devicePixelRatio || 1, 1.4));
+			}
+			animationFrame = requestAnimationFrame(animate);
+		}
+
+		function startAnimation() {
+			if (!layout || reducedMotion.matches || !isVisible || animationFrame) return;
+			lastFrameTime = performance.now();
+			animationFrame = requestAnimationFrame(animate);
+		}
+
+		new ResizeObserver(resizeCanvas).observe(viewer.viewport);
+		new IntersectionObserver(([entry]) => {
+			isVisible = Boolean(entry?.isIntersecting);
+			if (isVisible) startAnimation();
+		}, { threshold: 0.02 }).observe(figure);
+		reducedMotion.addEventListener('change', () => {
+			if (layout) drawLayout(viewer.context, viewer.canvas, layout, angle, Math.min(devicePixelRatio || 1, 1.4));
+			startAnimation();
+		});
+
+		resizeCanvas();
+		void fetch('/gds/sar-adc-layout.json')
+			.then((response) => {
+				if (!response.ok) throw new Error(`GDS geometry request failed with ${response.status}`);
+				return response.json() as Promise<GdsLayout>;
+			})
+			.then((parsedLayout) => {
+				if (!Array.isArray(parsedLayout.layers) || !Array.isArray(parsedLayout.bounds)) {
+					throw new Error('Invalid GDS geometry');
+				}
+				layout = {
+					...parsedLayout,
+					layers: parsedLayout.layers.filter((layer) => !hiddenLayers.has(layer.id)),
+				};
+				viewer.loading.hidden = true;
+				viewer.status.textContent = 'GDSII · live geometry';
+				const polygonCount = layout.metrics?.instances
+					?? layout.layers.reduce((count, layer) => count + layer.rectangles.length, 0);
+				viewer.metrics.textContent = `${polygonCount.toLocaleString()} polygons · ${layout.layers.length} layers`;
+				drawLayout(viewer.context, viewer.canvas, layout, angle, Math.min(devicePixelRatio || 1, 1.4));
+				startAnimation();
+			})
+			.catch((error: unknown) => {
+				console.error('Could not render the SAR ADC GDS', error);
+				viewer.loading.textContent = 'GDS unavailable';
+				viewer.status.textContent = 'GDSII · unavailable';
+			});
+	}
+
+	function drawLayout(
+		context: CanvasRenderingContext2D,
+		canvas: HTMLCanvasElement,
+		layout: GdsLayout,
+		angle: number,
+		pixelRatio: number,
+	) {
+		const width = canvas.width / pixelRatio;
+		const height = canvas.height / pixelRatio;
+		const [, , layoutWidth, layoutHeight] = layout.bounds;
+		const diagonal = Math.hypot(layoutWidth, layoutHeight);
+		const scale = Math.min(width / (diagonal * 1.08), height / (layoutHeight * 0.88));
+		const centerX = width * 0.56;
+		const centerY = height * 0.49;
+		const cosine = Math.cos(angle);
+		const sine = Math.sin(angle);
+
+		context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+		context.clearRect(0, 0, width, height);
+		context.lineJoin = 'round';
+
+		for (const layer of layout.layers) {
+			context.fillStyle = colorWithOpacity(layer.color, Math.min(0.94, layer.opacity + 0.08));
+			for (const [x, y, rectangleWidth, rectangleHeight] of layer.rectangles) {
+				const corners = [
+					project(x, y, layer.z),
+					project(x + rectangleWidth, y, layer.z),
+					project(x + rectangleWidth, y + rectangleHeight, layer.z),
+					project(x, y + rectangleHeight, layer.z),
+				];
+				context.beginPath();
+				context.moveTo(corners[0]![0], corners[0]![1]);
+				for (const corner of corners.slice(1)) context.lineTo(corner[0], corner[1]);
+				context.closePath();
+				context.fill();
+			}
+		}
+
+		function project(x: number, y: number, layerHeight: number): [number, number] {
+			const localX = x - layoutWidth / 2;
+			const localZ = -(y - layoutHeight / 2);
+			const rotatedX = localX * cosine + localZ * sine;
+			const rotatedZ = -localX * sine + localZ * cosine;
+			return [
+				centerX + rotatedX * scale,
+				centerY + (rotatedZ * 0.42 - layerHeight * 2.15) * scale,
+			];
+		}
+	}
+
+	function colorWithOpacity(color: string, opacity: number) {
+		const value = color.replace('#', '');
+		const red = Number.parseInt(value.slice(0, 2), 16);
+		const green = Number.parseInt(value.slice(2, 4), 16);
+		const blue = Number.parseInt(value.slice(4, 6), 16);
+		return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-hero-gds]').forEach(setupGdsViewer);
+</script>
+
+<style>
+	.hero-gds {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		overflow: hidden;
+	}
+
+	.hero-gds__viewport {
+		position: absolute;
+		inset: 0 0 2.4rem;
+	}
+
+	.hero-gds canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+
+	.hero-gds__loading {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		background:
+			linear-gradient(color-mix(in srgb, var(--line) 40%, transparent) 1px, transparent 1px),
+			linear-gradient(90deg, color-mix(in srgb, var(--line) 40%, transparent) 1px, transparent 1px);
+		background-size: 2rem 2rem;
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		mask-image: radial-gradient(circle, #000 0%, transparent 68%);
+	}
+
+	.hero-gds__loading[hidden] {
+		display: none;
+	}
+
+	.hero-gds figcaption {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.65rem 0.8rem;
+		border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+		background: color-mix(in srgb, var(--bg) 74%, transparent);
+		color: var(--faint);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		font-weight: 400;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		backdrop-filter: blur(10px);
+	}
+
+	.hero-gds figcaption span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.hero-gds figcaption b {
+		font-weight: inherit;
+	}
+
+	.hero-gds figcaption i {
+		display: block;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--signal);
+		box-shadow: 0 0 0.7rem color-mix(in srgb, var(--signal) 70%, transparent);
+	}
+
+	@media (max-width: 640px) {
+		.hero-gds figcaption span:last-child {
+			display: none;
+		}
+	}
+</style>

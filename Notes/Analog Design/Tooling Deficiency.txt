@@ -1,0 +1,80 @@
+
+===== Tooling Required =====
+To begin with, as a open-source research project, we dont have access to tools from cadence or synopsys, meaning that a lot of the tooling has to be re-invented ourselves OR if there's an alternative online, then that would be awesome.
+
+The typical Analog Design Cycle goes in the following stages:
+  * **Verilog-A modelling**
+    * to define system specifications (useful for exploring new architecture without involving circuit complexity)
+    * **Testbench Design** (testbenches can be written in Verilog-A, or in schematic form)
+  * **Circuit Design**
+    * **Topology Design**
+    * **Sizing**
+  * **Layout**
+{{:Pasted image 20261007074313.png}}
+
+The tools required are already listed in there, but lets go over them, and why decisions were made to opt for existing tooling vs making our own (and was it truly neccesary).
+
+1) Verilog-A Modelling \\
+There is 1 open-source tool that would be able to take care of this job. It's OpenVAF reloaded (https://github.com/OpenVAF/OpenVAF-Reloaded) which produces an .osdi file (essentially a .so) that most open-source simulators can use. However, even though this is a //reloaded// open-source project from the previously dead OpenVAF, it is still relatively dead and has a lot of missing features to the point where it hinders the AI research, and added onto the fact, that there is no existing source for learning Verilog-AMS.
+
+This leaves LLM-aided research at a HUGE disadvantage, especially considering system architecture is high-level and involves a lot of iterating (manual labour if done by me) to balance out the system's parameters (especially in analog) to match.
+
+Essentially, it is useful to find the //pareto// set of possible answers and then we explore the circuits, but if the tooling is limiting the LLM would just keep building workarounds and it will become a mess.
+
+=> Solution: Unfortunately and its the last resort here, but building a fully conformant Verilog-AMS / Verilog-A (subset of Verilog-AMS) myself.
+
+[[https://github.com/OmarSiwy/VerA|VerA]]'s (Current status):
+  * Conformance:
+    * Verilog-AMS LRM (mostly tested with fixtures, if untestable discussed in a CLAUSE (markdown file that I have))
+    * IEEE 1364, yes it also supports verilog so its something like verilator. Isn't extensively tested so this may have issues, however, it is not a major concern yet for this project.
+{{:Pasted image 20261007075338.png}}
+  * Performance:
+    * OpenVAF and VerA have roughly the same speed bottlenecked by a major issue. **LLVM itself is quite slow**
+    * However, to be clear VerA is a transpiler to Zig **MAINLY TO support the second design choice**
+{{:Pasted image 20261007075440.png}} \\
+Zig's share of the compilation is actually fairly small. Its mostly LLVM.
+
+  * Design Choices:
+    * OSDI can be produced, but has largely been ditched in-opt for a more custom .so API that allows more access
+    * Written in Zig (not Rust), because Zig has a more ecosystem to build the same exact code for the CPU and for the GPU (say a function that just has floating point math, would be a pain having to codegen another function for it).
+      * https://github.com/OmarSiwy/Gompute
+    * DOWNSIDE: Zig currently has the auto-vectorizer in LLVM disabled due to a bug, so I guess that can be a slow-down vs rust, but should be fixed soon.
+  * Remaining:
+    * Polishing and Github Issues online from running it on example projects
+
+2) Topology Design and Sizing \\
+{{:Pasted image 20261007080654.png}} \\
+https://arxiv.org/abs/2609.33356
+
+LLMs are genuinely getting scary at how good they are at everything, now give them the research papers, and relevant information they need, and they become even scarier.
+
+However, LLMs speak the language of relational knowledge, and not geometry, hence they SUCK at creating schematics. However, they are really good at creating netlists. Now, how can I as the designer who understands schematics but not netlists, work along wiht someone who understands netlists but can't speak to me in schematics.
+
+You'd let the LLM write the netlists, and create a tool that converts netlists to schematics, and thats exactly what I did. [[https://github.com/OmarSiwy/cktImg|cktImg]], but then you realize a FAULT in the industry.
+
+What Netlist Format should I use? Spectre format? HSpice format? NGSPice format? etc...
+
+Sometimes, you need the flexibility of swithcing between SPICE simulators, because one may have more features than the other, or one might have more accurate BSIM models than the other. So I created a higher-level netlist creation system with //BUILT-IN TESTBENCHES// they cna use rather than re-inventing the wheel everytime. [[https://github.com/OmarSiwy/SpiceRack|SpiceRack]]
+
+3) Testbenches and Post-Layout Simulation Iteratiolns
+
+[[https://github.com/OmarSiwy/ESPice|EGSpice]]: \\
+This is my own SPICE simulator that I've been working on, long before any of my analog interest mainly to learn if there was a way I can create an Equation Solver rather than simulations, however it developed into this.
+
+This is the lowest priority item from the list, mainly because it doesn't add features that we dont have (it does actually, but we dont need those features). The major selling point is the offloading of device evaluation (which should take ~90% of the simulation time) to the GPU. This is great for ANY post-layout simulation, and should be used in this project as so for quicker iteration feedback later on in the design cycle when we get to layout.
+
+TLDR; \\
+{{:Pasted image 20261007075904.png}}
+
+In the majority of cases it si much faster than its competition, but some very specific cases it is slower, so that needs some research and optimization.
+
+BTW, how is this done? EXTREME cache efficiency is the goal of this and SIMD usage everywhere (where it can benefit performance).
+
+[[https://github.com/UW-ASIC/Philis|Philis]] \\
+This is my proudest project, mainly because, if done right, and packaged right. It could genuinely be a game changer for the analog design field. Possibly, getting half the industry replaced with this tool... rip Layout Engineers.
+
+Layout takes a long time. Layout takes a lot of iteration, mind-numbing iteration to keep on improving. The sooner you realize, it is a constrainted otpimization problem, the quicker you realize. This is exactly what computers were made to do. Now, a lot of companies go down the path of using AI for this, but from my experience, there is nowhere near enough data to possibly do that. Even if you create synthetic data, it will be too repeatable and won't suffice. Hence, treating it like an old-style optimization problem wiht constraints coming from analog theory is the best, and its paying off. See the screenshot below: \\
+{{:Pasted image 20261007080413.png}}
+
+Clearly, its still in progress. Its not project. To date, there are 70 github issues that I need to go through, but its getting pretty damn good, and if not as the final post-layout, then as a pre-leminary one for quick feedback in research.
+

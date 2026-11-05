@@ -1,0 +1,207 @@
+.prose {
+	margin-top: 3rem;
+	font-size: 1.04rem;
+}
+
+.prose > :first-child {
+	margin-top: 0;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+	position: relative;
+	margin-top: 2.8em;
+	margin-bottom: 0.75em;
+	font-weight: 600;
+	letter-spacing: -0.035em;
+	line-height: 1.15;
+}
+
+.prose h2 {
+	font-size: 2rem;
+}
+
+.prose h3 {
+	font-size: 1.45rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote,
+.prose pre,
+.prose table {
+	margin-block: 1.25em;
+}
+
+.prose li + li {
+	margin-top: 0.45em;
+}
+
+.prose a {
+	color: var(--signal);
+}
+
+.prose .unresolved-wiki-link {
+	text-decoration-style: dashed;
+	text-decoration-color: var(--copper);
+}
+
+.prose .unresolved-wiki-link::after {
+	color: var(--copper);
+	content: ' ?';
+	font-family: var(--mono);
+	font-size: 0.65em;
+	vertical-align: super;
+}
+
+.prose .latex-diagram {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	max-height: 34rem;
+	margin: 2rem auto;
+	padding: 1rem;
+	border: 1px solid var(--line);
+	background: #fff;
+}
+
+.prose blockquote {
+	margin-inline: 0;
+	padding: 0.2rem 0 0.2rem 1.2rem;
+	border-left: 2px solid var(--copper);
+	color: var(--muted);
+}
+
+/* Obsidian callouts. `--callout-accent` is the only thing each variant changes. */
+.prose .callout {
+	--callout-accent: var(--signal);
+	margin-block: 1.25em;
+	padding: 0.75rem 1rem;
+	border-left: 3px solid var(--callout-accent);
+	border-radius: 0 var(--radius) var(--radius) 0;
+	background: color-mix(in srgb, var(--callout-accent) 8%, transparent);
+}
+
+.prose .callout__title {
+	margin: 0;
+	color: var(--callout-accent);
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.prose details.callout > summary.callout__title {
+	cursor: pointer;
+	list-style: none;
+}
+
+.prose details.callout > summary.callout__title::-webkit-details-marker {
+	display: none;
+}
+
+.prose details.callout > summary.callout__title::after {
+	content: ' ▸';
+}
+
+.prose details.callout[open] > summary.callout__title::after {
+	content: ' ▾';
+}
+
+.prose .callout__body > :first-child {
+	margin-top: 0.4em;
+}
+
+.prose .callout__body > :last-child {
+	margin-bottom: 0;
+}
+
+.prose .callout--warning {
+	--callout-accent: #e0a23a;
+}
+
+.prose .callout--important {
+	--callout-accent: var(--copper);
+}
+
+.prose .callout--question {
+	--callout-accent: #b48ee8;
+}
+
+.prose .callout--success {
+	--callout-accent: #63c088;
+}
+
+.prose .callout--example,
+.prose .callout--definition,
+.prose .callout--derivation,
+.prose .callout--annotation,
+.prose .callout--abstract {
+	--callout-accent: var(--muted);
+}
+
+.prose :not(pre) > code {
+	padding: 0.12em 0.35em;
+	border: 1px solid var(--line);
+	background: var(--surface);
+	font-family: var(--mono);
+	font-size: 0.86em;
+}
+
+.prose pre {
+	overflow-x: auto;
+	padding: 1.2rem;
+	border: 1px solid var(--line);
+	background: var(--bg-elevated) !important;
+	font-size: 0.84rem;
+	line-height: 1.65;
+	box-shadow: var(--shadow);
+}
+
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.prose th,
+.prose td {
+	padding: 0.7rem;
+	border: 1px solid var(--line);
+	text-align: left;
+}
+
+.prose th {
+	background: var(--surface);
+}
+
+.prose img {
+	max-width: 100%;
+	height: auto;
+	border: 1px solid var(--line);
+}
+
+.prose hr {
+	margin-block: 3rem;
+	border: 0;
+	border-top: 1px solid var(--line);
+}
+
+.heading-anchor {
+	margin-left: 0.4em;
+	color: var(--faint) !important;
+	font-family: var(--mono);
+	font-size: 0.6em;
+	text-decoration: none;
+}
+
+.heading-anchor::after {
+	content: '#';
+}
+
+.katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+}

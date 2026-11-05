@@ -1,0 +1,92 @@
+---
+import { Image } from 'astro:assets';
+
+import avatar from '../assets/me.png';
+import NoteSearch from '../components/NoteSearch.astro';
+import { profile } from '../data/portfolio';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+	pageType?: 'website' | 'article';
+}
+
+const {
+	title = profile.name,
+	description = profile.intro,
+	pageType = 'website',
+} = Astro.props;
+const documentTitle = title === profile.name ? title : `${title} — ${profile.name}`;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
+const pathname = Astro.url.pathname;
+const isEditorialPage = pathname.startsWith('/blog') || pathname.startsWith('/notes');
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#080b0f" />
+		<meta property="og:type" content={pageType} />
+		<meta property="og:title" content={documentTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta name="twitter:card" content="summary" />
+		<link rel="canonical" href={canonical} />
+		<link rel="alternate" type="application/rss+xml" title="Omar El-Sawy's blog" href="/rss.xml" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<title>{documentTitle}</title>
+		<script is:inline>
+			(() => {
+				const stored = localStorage.getItem('theme');
+				const preferred = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+				document.documentElement.dataset.theme = stored || preferred;
+			})();
+		</script>
+	</head>
+	<body class:list={{ 'editorial-page': isEditorialPage }}>
+		<a class="skip-link" href="#main-content">Skip to content</a>
+		<header class="site-header">
+			<nav class="site-nav page-width" aria-label="Primary navigation">
+				<a class="wordmark" href="/" aria-label="Omar El-Sawy, home">
+					<Image class="wordmark__avatar" src={avatar} width={64} height={64} alt="" format="webp" quality={78} loading="eager" fetchpriority="high" />
+					<span>Omar El-Sawy</span>
+				</a>
+				<div class="nav-links">
+					<a class:list={{ active: pathname === '/' }} href="/">Portfolio</a>
+					<a class:list={{ active: pathname.startsWith('/blog') }} href="/blog/">Blog</a>
+					<a class:list={{ active: pathname.startsWith('/notes') }} href="/notes/">Notes</a>
+					<button class="nav-search" type="button" data-search-open aria-label="Search notes">
+						<span aria-hidden="true">Search</span>
+						<kbd>/</kbd>
+					</button>
+					<button class="theme-toggle" type="button" aria-label="Toggle color theme">
+						<span class="theme-toggle__dark" aria-hidden="true">◐</span>
+						<span class="theme-toggle__light" aria-hidden="true">◑</span>
+					</button>
+				</div>
+			</nav>
+		</header>
+		<slot />
+		<NoteSearch />
+		<footer class="site-footer page-width">
+			<div>
+				<a href={profile.socials.github}>GitHub</a>
+				<a href={profile.socials.linkedin}>LinkedIn</a>
+				<a href={`mailto:${profile.email}`}>Email</a>
+			</div>
+		</footer>
+		<script>
+			const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
+			toggle?.addEventListener('click', () => {
+				const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+				document.documentElement.dataset.theme = theme;
+				localStorage.setItem('theme', theme);
+			});
+		</script>
+	</body>
+</html>
