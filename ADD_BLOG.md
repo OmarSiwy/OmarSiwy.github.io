@@ -39,6 +39,10 @@ Use normal Markdown images inside the article:
 
 Set `draft: true` while working. Drafts appear locally but are excluded from production.
 
+## Style
+
+Diagrams before words: people are visual. When a paragraph describes a flow, a circuit, a structure or a trade-off, draw it as a `circuitikz` figure (see `ADD_NOTES.md` for the form that also renders in Obsidian) and keep only the words the picture cannot carry.
+
 ## Check it
 
 ```sh
